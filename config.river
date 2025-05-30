@@ -1,0 +1,31 @@
+logging {
+  level  = "debug"
+  format = "logfmt"
+}
+
+prometheus.scrape "node_exporter" {
+  targets = [{ __address__ = "host.docker.internal:9100" }]
+  forward_to = [prometheus.remote_write.prom.receiver]
+}
+
+prometheus.scrape "custom_exporter" {
+  targets = [{ __address__ = "host.docker.internal:9200" }]
+  forward_to = [prometheus.remote_write.prom.receiver]
+}
+
+loki.source.file "example_logs" {
+  targets = [{ __path__ = "/var/log/hostlogs/app.log" }]
+  forward_to = [loki.write.local.receiver]
+}
+
+prometheus.remote_write "prom" {
+  endpoint {
+    url = "http://mimir:9009/api/v1/push"    
+  }
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
