@@ -3,6 +3,7 @@ logging {
   format = "logfmt"
 }
 
+// System Metrics
 prometheus.scrape "node_exporter" {
   targets = [{ __address__ = "host.docker.internal:9100" }]
   forward_to = [prometheus.remote_write.prom.receiver]
@@ -13,9 +14,28 @@ prometheus.scrape "custom_exporter" {
   forward_to = [prometheus.remote_write.prom.receiver]
 }
 
+// Log Collection
 loki.source.file "example_logs" {
   targets = [{ __path__ = "/var/log/hostlogs/app.log" }]
   forward_to = [loki.write.local.receiver]
+}
+
+// POS Systems
+prometheus.scrape "pos_brand1" {
+  targets = [
+    { __address__ = "host.docker.internal:9300", brand="brand1", location="store-1", type="pos" },
+    { __address__ = "host.docker.internal:9301", brand="brand1", location="store-2", type="pos" },
+  ]
+  forward_to = [prometheus.remote_write.prom.receiver]
+}
+
+// Network Devices
+prometheus.scrape "network_devices" {
+  targets = [
+    { __address__ = "host.docker.internal:9400", device="router-1", location="store-1", type="network" },
+    { __address__ = "host.docker.internal:9401", device="switch-1", location="store-1", type="network" },
+  ]
+  forward_to = [prometheus.remote_write.prom.receiver]
 }
 
 prometheus.remote_write "prom" {

@@ -20,14 +20,21 @@ RUN mkdir -p /etc/alloy /var/log/hostlogs /opt/custom_exporters /data-alloy /etc
 
 # Copia archivos
 COPY config.river /etc/alloy/config.river
-COPY custom_exporters/custom_exporter.sh /opt/custom_exporters/custom_exporter.sh
 COPY supervisord.conf /etc/supervisord.conf
 
-# Da permisos
-RUN chmod +x /opt/custom_exporters/custom_exporter.sh
+# Copia los scripts de exportadores
+COPY custom_exporters/*.sh /opt/custom_exporters/
+
+# Da permisos a los scripts
+RUN chmod +x /opt/custom_exporters/*.sh
 
 # Expone puertos
-EXPOSE 9100 9200 12345
+# 9100: Node Exporter
+# 9200: Custom Exporter
+# 9300-9301: Retail POS Exporters
+# 9400-9401: Network Device Exporters
+# 12345: Alloy UI
+EXPOSE 9100 9200 9300-9301 9400-9401 12345
 
 # Comando por defecto
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
