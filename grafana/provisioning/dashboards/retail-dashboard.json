@@ -1,496 +1,259 @@
 {
-    "annotations": {
-      "list": [
-        {
-          "builtIn": 1,
-          "datasource": {
-            "type": "prometheus",
-            "uid": "Mimir"
-          },
-          "enable": true,
-          "hide": true,
-          "name": "Annotations & Alerts",
-          "type": "dashboard"
-        }
-      ]
-    },
-    "editable": true,
-    "fiscalYearStartMonth": 0,
-    "graphTooltip": 0,
-    "id": 1,
-    "links": [],
-    "liveNow": false,
-    "panels": [
+  "annotations": {
+    "list": [
       {
-        "collapsed": false,
-        "gridPos": {
-          "h": 1,
-          "w": 24,
-          "x": 0,
-          "y": 0
-        },
-        "id": 10,
-        "panels": [],
-        "title": "Retail Operations Overview",
-        "type": "row"
-      },
-      {
-        "datasource": {
-          "type": "mimir",
-          "uid": "Mimir"
-        },
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "red",
-                  "value": null
-                },
-                {
-                  "color": "#EAB839",
-                  "value": 5
-                },
-                {
-                  "color": "#7EB26D",
-                  "value": 10
-                }
-              ]
-            },
-            "unit": "short"
-          }
-        },
-        "gridPos": {
-          "h": 5,
-          "w": 6,
-          "x": 0,
-          "y": 1
-        },
-        "id": 2,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "area",
-          "justifyMode": "auto",
-          "orientation": "auto"
-        },
-        "targets": [
-          {
-            "expr": "sum by(location) (pos_transactions_total{status=\"success\"})",
-            "legendFormat": "{{location}} - Transactions",
-            "refId": "A"
-          }
-        ],
-        "title": "Total Transactions",
-        "type": "stat"
-      },
-      {
-        "datasource": {
-          "type": "mimir",
-          "uid": "Mimir"
-        },
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "red",
-                  "value": null
-                },
-                {
-                  "color": "#EAB839",
-                  "value": 1000
-                },
-                {
-                  "color": "#7EB26D",
-                  "value": 5000
-                }
-              ]
-            },
-            "unit": "currencyUSD"
-          }
-        },
-        "gridPos": {
-          "h": 5,
-          "w": 6,
-          "x": 6,
-          "y": 1
-        },
-        "id": 3,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "area",
-          "justifyMode": "auto",
-          "orientation": "auto"
-        },
-        "targets": [
-          {
-            "expr": "sum by(location) (pos_amount_total)",
-            "legendFormat": "{{location}} - Revenue",
-            "refId": "A"
-          }
-        ],
-        "title": "Total Revenue",
-        "type": "stat"
-      },
-      {
-        "datasource": {
-          "type": "mimir",
-          "uid": "Mimir"
-        },
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "red",
-                  "value": 80
-                },
-                {
-                  "color": "#EAB839",
-                  "value": 60
-                },
-                {
-                  "color": "#7EB26D",
-                  "value": 0
-                }
-              ]
-            },
-            "unit": "percent"
-          }
-        },
-        "gridPos": {
-          "h": 5,
-          "w": 6,
-          "x": 12,
-          "y": 1
-        },
-        "id": 4,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "area",
-          "justifyMode": "auto",
-          "orientation": "auto"
-        },
-        "targets": [
-          {
-            "expr": "sum by(location) (pos_cpu_usage)",
-            "legendFormat": "{{location}} - CPU",
-            "refId": "A"
-          }
-        ],
-        "title": "POS CPU Usage",
-        "type": "stat"
-      },
-      {
-        "datasource": {
-          "type": "mimir",
-          "uid": "Mimir"
-        },
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "red",
-                  "value": 8000000
-                },
-                {
-                  "color": "#EAB839",
-                  "value": 5000000
-                },
-                {
-                  "color": "#7EB26D",
-                  "value": 0
-                }
-              ]
-            },
-            "unit": "bytes"
-          }
-        },
-        "gridPos": {
-          "h": 5,
-          "w": 6,
-          "x": 18,
-          "y": 1
-        },
-        "id": 5,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "area",
-          "justifyMode": "auto",
-          "orientation": "auto"
-        },
-        "targets": [
-          {
-            "expr": "sum by(location) (pos_memory_usage_bytes)",
-            "legendFormat": "{{location}} - Memory",
-            "refId": "A"
-          }
-        ],
-        "title": "POS Memory Usage",
-        "type": "stat"
-      },
-      {
-        "collapsed": false,
-        "gridPos": {
-          "h": 1,
-          "w": 24,
-          "x": 0,
-          "y": 6
-        },
-        "id": 11,
-        "panels": [],
-        "title": "Network Infrastructure",
-        "type": "row"
-      },
-      {
-        "datasource": {
-          "type": "mimir",
-          "uid": "Mimir"
-        },
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "red",
-                  "value": 0.5
-                },
-                {
-                  "color": "#7EB26D",
-                  "value": 1
-                }
-              ]
-            },
-            "unit": "short"
-          }
-        },
-        "gridPos": {
-          "h": 5,
-          "w": 6,
-          "x": 0,
-          "y": 7
-        },
-        "id": 6,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "area",
-          "justifyMode": "auto",
-          "orientation": "auto"
-        },
-        "targets": [
-          {
-            "expr": "sum by(device, type) (network_device_up)",
-            "legendFormat": "{{device}} ({{type}})",
-            "refId": "A"
-          }
-        ],
-        "title": "Network Device Status",
-        "type": "stat"
-      },
-      {
-        "datasource": {
-          "type": "mimir",
-          "uid": "Mimir"
-        },
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "#7EB26D",
-                  "value": null
-                },
-                {
-                  "color": "#EAB839",
-                  "value": 70
-                },
-                {
-                  "color": "red",
-                  "value": 90
-                }
-              ]
-            },
-            "unit": "percent"
-          }
-        },
-        "gridPos": {
-          "h": 5,
-          "w": 6,
-          "x": 6,
-          "y": 7
-        },
-        "id": 7,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "area",
-          "justifyMode": "auto",
-          "orientation": "auto"
-        },
-        "targets": [
-          {
-            "expr": "sum by(device, type) (network_device_cpu_usage)",
-            "legendFormat": "{{device}} ({{type}})",
-            "refId": "A"
-          }
-        ],
-        "title": "Device CPU Usage",
-        "type": "stat"
-      },
-      {
-        "datasource": {
-          "type": "mimir",
-          "uid": "Mimir"
-        },
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "#7EB26D",
-                  "value": null
-                },
-                {
-                  "color": "#EAB839",
-                  "value": 70
-                },
-                {
-                  "color": "red",
-                  "value": 90
-                }
-              ]
-            },
-            "unit": "percent"
-          }
-        },
-        "gridPos": {
-          "h": 5,
-          "w": 6,
-          "x": 12,
-          "y": 7
-        },
-        "id": 8,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "area",
-          "justifyMode": "auto",
-          "orientation": "auto"
-        },
-        "targets": [
-          {
-            "expr": "sum by(device, type) (network_device_memory_usage)",
-            "legendFormat": "{{device}} ({{type}})",
-            "refId": "A"
-          }
-        ],
-        "title": "Device Memory Usage",
-        "type": "stat"
-      },
-      {
-        "datasource": {
-          "type": "mimir",
-          "uid": "Mimir"
-        },
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "red",
-                  "value": 100
-                },
-                {
-                  "color": "#EAB839",
-                  "value": 50
-                },
-                {
-                  "color": "#7EB26D",
-                  "value": 0
-                }
-              ]
-            },
-            "unit": "ms"
-          }
-        },
-        "gridPos": {
-          "h": 5,
-          "w": 6,
-          "x": 18,
-          "y": 7
-        },
-        "id": 9,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "area",
-          "justifyMode": "auto",
-          "orientation": "auto"
-        },
-        "targets": [
-          {
-            "expr": "sum by(device, type) (network_device_packet_loss * 1000)",
-            "legendFormat": "{{device}} ({{type}})",
-            "refId": "A"
-          }
-        ],
-        "title": "Packet Loss (ms)",
-        "type": "stat"
+        "builtIn": 1,
+        "datasource": { "type": "prometheus", "uid": "Mimir" },
+        "enable": true,
+        "hide": true,
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
       }
-    ],
-    "refresh": "5s",
-    "schemaVersion": 38,
-    "style": "dark",
-    "tags": ["retail", "observability"],
-    "templating": {
-      "list": []
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 10,
+      "panels": [],
+      "title": "Retail Operations Overview",
+      "type": "row"
     },
-    "time": {
-      "from": "now-6h",
-      "to": "now"
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
+      "id": 2,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "sum by(location) (pos_transactions_total{region=~'$region', location=~'$location', status=\"success\"})", "legendFormat": "{{location}} - Transactions", "refId": "A" }
+      ],
+      "title": "Total Transactions",
+      "type": "stat"
     },
-    "timepicker": {},
-    "timezone": "",
-    "title": "Retail Operations Dashboard",
-    "uid": "retail-ops-dashboard",
-    "version": 1,
-    "weekStart": ""
-  }
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "currencyUSD" } },
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 1 },
+      "id": 3,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "sum by(location) (pos_amount_total{region=~'$region', location=~'$location'})", "legendFormat": "{{location}} - Revenue", "refId": "A" }
+      ],
+      "title": "Total Revenue",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "percent" } },
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 1 },
+      "id": 4,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "avg by(location) (pos_cpu_usage{region=~'$region', location=~'$location'})", "legendFormat": "{{location}} - CPU", "refId": "A" }
+      ],
+      "title": "POS CPU Usage",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "bytes" } },
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 1 },
+      "id": 5,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "avg by(location) (pos_memory_usage_bytes{region=~'$region', location=~'$location'})", "legendFormat": "{{location}} - Memory", "refId": "A" }
+      ],
+      "title": "POS Memory Usage",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 6 },
+      "id": 11,
+      "panels": [],
+      "title": "Network Infrastructure",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 7 },
+      "id": 6,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "sum by(device, type, region, location) (network_device_up{region=~'$region', location=~'$location'})", "legendFormat": "{{device}} ({{type}})", "refId": "A" }
+      ],
+      "title": "Network Device Status",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "percent" } },
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 7 },
+      "id": 7,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "avg by(device, type, region, location) (network_device_cpu_usage{region=~'$region', location=~'$location'})", "legendFormat": "{{device}} ({{type}})", "refId": "A" }
+      ],
+      "title": "Device CPU Usage",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "percent" } },
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 7 },
+      "id": 8,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "avg by(device, type, region, location) (network_device_memory_usage{region=~'$region', location=~'$location'})", "legendFormat": "{{device}} ({{type}})", "refId": "A" }
+      ],
+      "title": "Device Memory Usage",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "ms" } },
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 7 },
+      "id": 9,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "avg by(device, type, region, location) (network_device_packet_loss{region=~'$region', location=~'$location'} * 1000)", "legendFormat": "{{device}} ({{type}})", "refId": "A" }
+      ],
+      "title": "Packet Loss (ms)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "id": 12,
+      "panels": [],
+      "title": "Node Health Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 13 },
+      "id": 13,
+      "options": { "showHeader": true },
+      "targets": [
+        { "expr": "network_device_up or pos_transactions_total or custom_temperature", "legendFormat": "{{region}} | {{location}} | {{type}} | {{device}} | {{problem}}", "refId": "A" }
+      ],
+      "title": "All Nodes Health Table",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 21 },
+      "id": 14,
+      "panels": [],
+      "title": "Recent Alerts & Anomalies",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 5, "w": 24, "x": 0, "y": 22 },
+      "id": 15,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "max_over_time(pos_cpu_usage{region=~'$region', location=~'$location'}[5m]) > 80 or network_device_up == 0", "legendFormat": "Anomaly", "refId": "A" }
+      ],
+      "title": "Anomaly/Alert Panel",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 27 },
+      "id": 16,
+      "panels": [],
+      "title": "Logs",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "Loki" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 28 },
+      "id": 17,
+      "options": { "showTime": true, "wrapLogMessage": true },
+      "targets": [
+        { "expr": "{filename=\"/var/log/hostlogs/app.log\"} |~ \"error|fail|down\"", "refId": "A" }
+      ],
+      "title": "Recent Error/Warning Logs",
+      "type": "logs"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["retail", "observability"],
+  "templating": {
+    "list": [
+      {
+        "name": "region",
+        "type": "query",
+        "datasource": "Mimir",
+        "refresh": 1,
+        "query": "label_values(region)",
+        "multi": true,
+        "includeAll": true,
+        "current": { "selected": false, "text": "All", "value": "$__all" }
+      },
+      {
+        "name": "location",
+        "type": "query",
+        "datasource": "Mimir",
+        "refresh": 1,
+        "query": "label_values(location)",
+        "multi": true,
+        "includeAll": true,
+        "current": { "selected": false, "text": "All", "value": "$__all" }
+      },
+      {
+        "name": "type",
+        "type": "query",
+        "datasource": "Mimir",
+        "refresh": 1,
+        "query": "label_values(type)",
+        "multi": true,
+        "includeAll": true,
+        "current": { "selected": false, "text": "All", "value": "$__all" }
+      },
+      {
+        "name": "device",
+        "type": "query",
+        "datasource": "Mimir",
+        "refresh": 1,
+        "query": "label_values(device)",
+        "multi": true,
+        "includeAll": true,
+        "current": { "selected": false, "text": "All", "value": "$__all" }
+      },
+      {
+        "name": "problem",
+        "type": "query",
+        "datasource": "Mimir",
+        "refresh": 1,
+        "query": "label_values(problem)",
+        "multi": true,
+        "includeAll": true,
+        "current": { "selected": false, "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Retail Operations Dashboard",
+  "uid": "retail-ops-dashboard",
+  "version": 2,
+  "weekStart": ""
+}

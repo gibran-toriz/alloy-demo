@@ -94,6 +94,102 @@
   ],
   "panels": [
     {
+      "type": "row",
+      "title": "Node Health Overview",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "table",
+      "title": "Server Health Table",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 1 },
+      "id": 2,
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "up{region=~'$region', location=~'$location', type=~'$type'}",
+          "legendFormat": "{{region}} | {{location}} | {{type}} | {{instance}}",
+          "refId": "A"
+        }
+      ],
+      "options": { "showHeader": true }
+    },
+    {
+      "type": "row",
+      "title": "Quick CPU / Mem / Disk",
+      "gridPos": { "y": 9 },
+      "id": 3,
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "gauge",
+      "title": "CPU Busy",
+      "gridPos": { "y": 10 },
+      "id": 4,
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\",region=~'$region',location=~'$location',type=~'$type'}[5m])) * 100)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "gauge",
+      "title": "RAM Used",
+      "gridPos": { "y": 11 },
+      "id": 5,
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "(1 - (node_memory_MemAvailable_bytes{region=~'$region',location=~'$location',type=~'$type'} / node_memory_MemTotal_bytes{region=~'$region',location=~'$location',type=~'$type'})) * 100",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "gauge",
+      "title": "Root FS Used",
+      "gridPos": { "y": 12 },
+      "id": 6,
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "(1 - (node_filesystem_avail_bytes{mountpoint=\"/\",region=~'$region',location=~'$location',type=~'$type'} / node_filesystem_size_bytes{mountpoint=\"/\",region=~'$region',location=~'$location',type=~'$type'})) * 100",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "CPU Usage Over Time",
+      "gridPos": { "y": 13 },
+      "id": 7,
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\",region=~'$region',location=~'$location',type=~'$type'}[5m])) * 100)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Memory Usage Over Time",
+      "gridPos": { "y": 14 },
+      "id": 8,
+      "datasource": { "uid": "${DS_PROMETHEUS}" },
+      "targets": [
+        {
+          "expr": "(1 - (node_memory_MemAvailable_bytes{region=~'$region',location=~'$location',type=~'$type'} / node_memory_MemTotal_bytes{region=~'$region',location=~'$location',type=~'$type'})) * 100",
+          "refId": "A"
+        }
+      ]
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
