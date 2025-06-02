@@ -12,9 +12,13 @@ services:
       - loki
       - mimir
     ports:
-      - "12345:12345"
-      - "9100:9100"
-      - "9200:9200"
+      - "12345:12345"  # Alloy UI
+      - "9100:9100"    # Node Exporter
+      - "9200:9200"    # Custom Exporter
+      - "9300:9300"    # Retail POS Exporter 1
+      - "9301:9301"    # Retail POS Exporter 2
+      - "9400:9400"    # Network Device Exporter (Router)
+      - "9401:9401"    # Network Device Exporter (Switch)
     command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
   loki:
@@ -43,6 +47,14 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana-storage:/var/lib/grafana
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
     depends_on:
       - loki
       - mimir
+
+volumes:
+  grafana-storage:
