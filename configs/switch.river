@@ -20,7 +20,7 @@ prometheus.scrape "network_device_exporter" {
 // Log collection for switch logs
 loki.source.file "network_logs" {
   targets = [{
-    __path__ = "/var/log/hostlogs/switch-*.log",
+    __path__ = "/var/log/hostlogs/switch-core.log",
     region = env("REGION"),
     location = env("LOCATION"),
     device = env("DEVICE"),

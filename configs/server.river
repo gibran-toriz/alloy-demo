@@ -37,6 +37,20 @@ prometheus.remote_write "prom" {
   }
 }
 
+// Log collection for server logs
+loki.source.file "server_logs" {
+  targets = [{
+    __path__ = "/var/log/hostlogs/server-core.log",
+    region = env("REGION"),
+    location = env("LOCATION"),
+    type = "server",
+    job = "server_logs",
+    brand = env("BRAND"),
+    instance = env("HOSTNAME"),
+  }]
+  forward_to = [loki.write.loki.receiver]
+}
+
 // Loki configuration for logs
 loki.write "loki" {
   endpoint {
