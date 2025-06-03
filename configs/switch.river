@@ -1,0 +1,64 @@
+// Logging configuration
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// Network Device Exporter Configuration for Switch
+prometheus.scrape "network_device_exporter" {
+  targets = [{
+    __address__ = "localhost:9401",
+    region = env("REGION"),
+    location = env("LOCATION"),
+    device = env("DEVICE"),
+    device_type = "switch",
+    type = "network_device",
+  }]
+  forward_to = [prometheus.remote_write.prom.receiver]
+}
+
+// Log collection for switch logs
+loki.source.file "network_logs" {
+  targets = [{
+    __path__ = "/var/log/hostlogs/switch-*.log",
+    region = env("REGION"),
+    location = env("LOCATION"),
+    device = env("DEVICE"),
+    device_type = "switch",
+    type = "network_device",
+    job = "network_logs",
+  }]
+  
+  // Forward logs to Loki
+  forward_to = [loki.write.loki.receiver]
+}
+
+// Loki configuration for sending logs
+loki.write "loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+  external_labels = {
+    region = env("REGION"),
+    location = env("LOCATION"),
+    device = env("DEVICE"),
+    device_type = "switch",
+    node_type = "switch",
+  }
+}
+
+// Remote Write Configuration for metrics
+prometheus.remote_write "prom" {
+  endpoint {
+    url = "http://mimir:9009/api/v1/push"
+  }
+  
+  // Add external labels to all metrics
+  external_labels = {
+    region = env("REGION"),
+    location = env("LOCATION"),
+    device = env("DEVICE"),
+    device_type = "switch",
+    node_type = "network_device",
+  }
+}

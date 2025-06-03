@@ -1,0 +1,27 @@
+// Default configuration for dynamic nodes
+// This is a minimal configuration that can be overridden at runtime
+
+// Logging configuration
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// Remote Write Configuration for metrics
+prometheus.remote_write "prom" {
+  endpoint {
+    url = "http://mimir:9009/api/v1/push"
+  }
+}
+
+// Loki configuration for sending logs
+loki.write "loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+  external_labels = {
+    region = env("REGION"),
+    location = env("LOCATION"),
+    node_type = env("NODE_TYPE"),
+  }
+}

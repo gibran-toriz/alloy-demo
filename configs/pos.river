@@ -1,0 +1,48 @@
+// Logging configuration
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// POS Exporter Configuration
+prometheus.scrape "pos_exporter" {
+  targets = [{
+    __address__ = "localhost:9300",
+    brand = env("BRAND"),
+    region = env("REGION"),
+    location = env("LOCATION"),
+    type = "pos",
+    problem = env("PROBLEM_MODE"),
+  }]
+  forward_to = [prometheus.remote_write.prom.receiver]
+}
+
+// Log Collection
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+  external_labels = {
+    source = "alloy",
+  }
+}
+
+loki.source.file "pos_logs" {
+  targets = [
+    {
+      __path__ = "/var/log/pos.log",
+      job = "pos_logs",
+      region = env("REGION"),
+      location = env("LOCATION"),
+      type = "pos",
+    },
+  ]
+  forward_to = [loki.write.local.receiver]
+}
+
+// Remote Write Configuration
+prometheus.remote_write "prom" {
+  endpoint {
+    url = "http://mimir:9009/api/v1/push"
+  }
+}

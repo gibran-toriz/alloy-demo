@@ -1,0 +1,52 @@
+// Logging configuration
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// Node Exporter Configuration
+prometheus.scrape "node_exporter" {
+  targets = [{
+    __address__ = "localhost:9100",
+    region = env("REGION"),
+    location = env("LOCATION"),
+    type = "server",
+    brand = env("BRAND"),
+    instance = env("HOSTNAME"),
+  }]
+  forward_to = [prometheus.remote_write.prom.receiver]
+  
+  // Scrape configuration
+  scrape_interval = "15s"
+  scrape_timeout = "10s"
+}
+
+// Remote Write Configuration
+prometheus.remote_write "prom" {
+  endpoint {
+    url = "http://mimir:9009/api/v1/push"
+  }
+  
+  // Add external labels to all metrics
+  external_labels = {
+    region = env("REGION"),
+    location = env("LOCATION"),
+    node_type = "server",
+    brand = env("BRAND"),
+    instance = env("HOSTNAME"),
+  }
+}
+
+// Loki configuration for logs
+loki.write "loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+  external_labels = {
+    region = env("REGION"),
+    location = env("LOCATION"),
+    node_type = "server",
+    brand = env("BRAND"),
+    instance = env("HOSTNAME"),
+  }
+}

@@ -1,26 +1,46 @@
 version: "3.8"
 
+# Red personalizada para todos los servicios
+networks:
+  alloy_net:
+    driver: bridge
+
+# Volúmenes
+volumes:
+  grafana-storage:
+
+# Servicios centrales
 services:
-  # Centralized observability stack
+  # Loki - Almacenamiento de logs
   loki:
     image: grafana/loki:2.9.4
     container_name: loki
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - alloy_net
+    restart: unless-stopped
 
+  # Mimir - Almacenamiento de métricas
   mimir:
     image: grafana/mimir:2.11.0
     container_name: mimir
     ports:
-      - "9009:9009"
-      - "9095:9095"
+      - "9009:9009"  # Para escritura de métricas
+      - "9095:9095"  # Para consultas
     command:
       - -target=all
       - -config.file=/etc/mimir/config.yaml
     volumes:
       - ./mimir-config.yaml:/etc/mimir/config.yaml
+    networks:
+      - alloy_net
+    restart: unless-stopped
+    depends_on:
+      - loki
 
+  # Grafana - Visualización
   grafana:
     image: grafana/grafana:10.2.3
     container_name: grafana
@@ -33,224 +53,38 @@ services:
       - ./grafana/provisioning:/etc/grafana/provisioning
       - grafana-storage:/var/lib/grafana
       - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - alloy_net
+    restart: unless-stopped
     depends_on:
       - loki
       - mimir
 
-  # --- Region 1 Nodes ---
-  alloy_region1_server:
-    build: .
-    container_name: alloy-region1-server
-    privileged: true
+  # Plantilla para nodos (no se inicia por defecto)
+  node_template:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_TYPE: pos  # Valor por defecto, se sobrescribe al crear el contenedor
+    container_name: alloy_node_template
+    profiles: ["dont-start"]
     environment:
-      - REGION=region1
-      - LOCATION=store-1
-      - NODE_TYPE=server
-      - PROBLEM_MODE=healthy
+      - NODE_TYPE=pos  # Valor por defecto, se sobrescribe al crear el contenedor
     volumes:
+      - ./data-alloy:/data-alloy
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./hostlogs:/var/log/hostlogs
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/host:ro
-    depends_on:
-      - loki
-      - mimir
     ports:
-      - "12346:12345"  # Alloy UI (optional)
-      - "9110:9100"    # Node Exporter
-      - "9210:9200"    # Custom Exporter
+      - "9100:9100"    # Node Exporter
+      - "9200:9200"    # Custom Exporter
+      - "9300-9301:9300-9301"  # Retail POS Exporters
+      - "9400-9401:9400-9401"  # Network Device Exporters
+      - "12345:12345"  # Alloy UI
+    networks:
+      - alloy_net
+    restart: unless-stopped
     command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-
-  alloy_region1_pos:
-    build: .
-    container_name: alloy-region1-pos
-    privileged: true
-    environment:
-      - REGION=region1
-      - LOCATION=store-1
-      - NODE_TYPE=pos
-      - PROBLEM_MODE=healthy
-      - BRAND=brand1
-    volumes:
-      - ./hostlogs:/var/log/hostlogs
-    depends_on:
-      - loki
-      - mimir
-    ports:
-      - "9310:9300"    # POS Exporter
-    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-
-  alloy_region1_router:
-    build: .
-    container_name: alloy-region1-router
-    privileged: true
-    environment:
-      - REGION=region1
-      - LOCATION=store-1
-      - NODE_TYPE=router
-      - DEVICE=router-1
-      - DEVICE_TYPE=router
-      - PROBLEM_MODE=healthy
-    volumes:
-      - ./hostlogs:/var/log/hostlogs
-    depends_on:
-      - loki
-      - mimir
-    ports:
-      - "9410:9400"    # Router Exporter
-    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-
-  alloy_region1_switch:
-    build: .
-    container_name: alloy-region1-switch
-    privileged: true
-    environment:
-      - REGION=region1
-      - LOCATION=store-1
-      - NODE_TYPE=switch
-      - DEVICE=switch-1
-      - DEVICE_TYPE=switch
-      - PROBLEM_MODE=healthy
-    volumes:
-      - ./hostlogs:/var/log/hostlogs
-    depends_on:
-      - loki
-      - mimir
-    ports:
-      - "9411:9401"    # Switch Exporter
-    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-
-  # --- Region 2 Nodes ---
-  alloy_region2_server:
-    build: .
-    container_name: alloy-region2-server
-    privileged: true
-    environment:
-      - REGION=region2
-      - LOCATION=store-2
-      - NODE_TYPE=server
-      - PROBLEM_MODE=healthy
-    volumes:
-      - ./hostlogs:/var/log/hostlogs
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/host:ro
-    depends_on:
-      - loki
-      - mimir
-    ports:
-      - "12347:12345"
-      - "9120:9100"
-      - "9220:9200"
-    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-
-  alloy_region2_pos:
-    build: .
-    container_name: alloy-region2-pos
-    privileged: true
-    environment:
-      - REGION=region2
-      - LOCATION=store-2
-      - NODE_TYPE=pos
-      - PROBLEM_MODE=healthy
-      - BRAND=brand1
-    volumes:
-      - ./hostlogs:/var/log/hostlogs
-    depends_on:
-      - loki
-      - mimir
-    ports:
-      - "9320:9300"
-    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-
-  alloy_region2_router:
-    build: .
-    container_name: alloy-region2-router
-    privileged: true
-    environment:
-      - REGION=region2
-      - LOCATION=store-2
-      - NODE_TYPE=router
-      - DEVICE=router-2
-      - DEVICE_TYPE=router
-      - PROBLEM_MODE=healthy
-    volumes:
-      - ./hostlogs:/var/log/hostlogs
-    depends_on:
-      - loki
-      - mimir
-    ports:
-      - "9420:9400"
-    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-
-  alloy_region2_switch:
-    build: .
-    container_name: alloy-region2-switch
-    privileged: true
-    environment:
-      - REGION=region2
-      - LOCATION=store-2
-      - NODE_TYPE=switch
-      - DEVICE=switch-2
-      - DEVICE_TYPE=switch
-      - PROBLEM_MODE=healthy
-    volumes:
-      - ./hostlogs:/var/log/hostlogs
-    depends_on:
-      - loki
-      - mimir
-    ports:
-      - "9421:9401"
-    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-
-  # --- Example: Add a problematic node in region1 ---
-  alloy_region1_pos_problem:
-    build: .
-    container_name: alloy-region1-pos-problem
-    privileged: true
-    environment:
-      - REGION=region1
-      - LOCATION=store-1
-      - NODE_TYPE=pos
-      - PROBLEM_MODE=problem
-      - BRAND=brand1
-    volumes:
-      - ./hostlogs:/var/log/hostlogs
-    depends_on:
-      - loki
-      - mimir
-    ports:
-      - "9330:9300"
-    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-
-  # --- Dynamic Node Template ---
-  # Use this service as a template for dynamic node creation.
-  # Example usage:
-  #   docker compose up -d --no-deps --name node1 alloy_node_template
-  #   docker compose run -d --name node2 -e REGION=region3 -e LOCATION=store-3 -e NODE_TYPE=pos -e PROBLEM_MODE=healthy -p 9500:9300 alloy_node_template
-  #
-  # You can override environment variables and ports at runtime.
-  #
-  alloy_node_template:
-    build: .
-    privileged: true
-    environment:
-      - REGION=changeme
-      - LOCATION=changeme
-      - NODE_TYPE=changeme
-      - PROBLEM_MODE=healthy
-      # Add more env vars as needed (e.g., BRAND, DEVICE, DEVICE_TYPE)
-    volumes:
-      - ./hostlogs:/var/log/hostlogs
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/host:ro
-    depends_on:
-      - loki
-      - mimir
-    entrypoint: ["/opt/entrypoint.sh"]
-    # No ports by default; specify with -p at runtime
-    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
-
-volumes:
-  grafana-storage:

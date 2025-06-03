@@ -1,50 +1,67 @@
+// Logging configuration
 logging {
-  level  = "debug"
+  level  = "info"
   format = "logfmt"
 }
 
-// System Metrics (Node Exporter)
-prometheus.scrape "node_exporter" {
-  targets = [{ __address__ = "localhost:9100", region = env("REGION"), location = env("LOCATION"), type = env("NODE_TYPE") }]
-  forward_to = [prometheus.remote_write.prom.receiver]
-}
+// Define the node type from environment variable
+local NODE_TYPE = env("NODE_TYPE")
 
-// Custom Exporter (if present)
-prometheus.scrape "custom_exporter" {
-  targets = [{ __address__ = "localhost:9200", region = env("REGION"), location = env("LOCATION"), type = env("NODE_TYPE") }]
-  forward_to = [prometheus.remote_write.prom.receiver]
-}
-
-// POS Exporter (if present)
+// POS Exporter - Will only work if the exporter is running
 prometheus.scrape "pos_exporter" {
-  targets = [{ __address__ = "localhost:9300", brand = env("BRAND"), region = env("REGION"), location = env("LOCATION"), type = env("NODE_TYPE"), problem = env("PROBLEM_MODE") }]
+  targets = [{
+    __address__ = "localhost:9300",
+    brand = env("BRAND"),
+    region = env("REGION"),
+    location = env("LOCATION"),
+    type = "pos",
+    problem = env("PROBLEM_MODE"),
+  }]
   forward_to = [prometheus.remote_write.prom.receiver]
 }
 
-// Network Device Exporter (if present)
-prometheus.scrape "network_device_exporter" {
-  targets = [{ __address__ = "localhost:9400", device = env("DEVICE"), region = env("REGION"), location = env("LOCATION"), type = env("DEVICE_TYPE"), problem = env("PROBLEM_MODE") }]
-  forward_to = [prometheus.remote_write.prom.receiver]
-}
-prometheus.scrape "network_device_exporter2" {
-  targets = [{ __address__ = "localhost:9401", device = env("DEVICE"), region = env("REGION"), location = env("LOCATION"), type = env("DEVICE_TYPE"), problem = env("PROBLEM_MODE") }]
+// Node Exporter - Will only work if the exporter is running
+prometheus.scrape "node_exporter" {
+  targets = [{
+    __address__ = "localhost:9100",
+    region = env("REGION"),
+    location = env("LOCATION"),
+    type = "server",
+  }]
   forward_to = [prometheus.remote_write.prom.receiver]
 }
 
-// Log Collection
-loki.source.file "example_logs" {
-  targets = [{ __path__ = "/var/log/hostlogs/app.log", region = env("REGION"), location = env("LOCATION"), type = env("NODE_TYPE") }]
-  forward_to = [loki.write.local.receiver]
-}
-
-prometheus.remote_write "prom" {
-  endpoint {
-    url = "http://mimir:9009/api/v1/push"    
-  }
+// Log Collection - Only for POS nodes
+local.file "log_file" {
+  path = ["/var/log/pos.log"]
+  targets = [
+    {
+      __path__ = "/var/log/pos.log",
+      job = "pos_logs",
+      region = env("REGION"),
+      location = env("LOCATION"),
+      type = "pos",
+    },
+  ]
 }
 
 loki.write "local" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
+  }
+  external_labels = {
+    source = "alloy",
+  }
+}
+
+loki.source.file "pos_logs" {
+  targets = local.file.log_file.targets
+  forward_to = [loki.write.local.receiver]
+}
+
+// Remote Write Configuration
+prometheus.remote_write "prom" {
+  endpoint {
+    url = "http://mimir:9009/api/v1/push"
   }
 }

@@ -40,21 +40,31 @@ environment=NODE_TYPE=%(ENV_NODE_TYPE)s
 EOF
     ;;
   router)
+    # Establecer valor predeterminado para DEVICE_TYPE si no está definido
+    if [ -z "$DEVICE_TYPE" ]; then
+      DEVICE_TYPE="unknown"
+    fi
+    
     cat >> $SUPERVISOR_CONF <<EOF
 [program:network_device_exporter_router]
 command=/bin/bash /opt/custom_exporters/network_device_exporter.sh 9400
 autorestart=true
 user=root
-environment=NODE_TYPE=%(ENV_NODE_TYPE)s,DEVICE_TYPE=%(ENV_DEVICE_TYPE)s
+environment=NODE_TYPE=${NODE_TYPE},DEVICE_TYPE=${DEVICE_TYPE}
 EOF
     ;;
   switch)
+    # Establecer valor predeterminado para DEVICE_TYPE si no está definido
+    if [ -z "$DEVICE_TYPE" ]; then
+      DEVICE_TYPE="unknown"
+    fi
+    
     cat >> $SUPERVISOR_CONF <<EOF
 [program:network_device_exporter_switch]
 command=/bin/bash /opt/custom_exporters/network_device_exporter.sh 9401
 autorestart=true
 user=root
-environment=NODE_TYPE=%(ENV_NODE_TYPE)s,DEVICE_TYPE=%(ENV_DEVICE_TYPE)s
+environment=NODE_TYPE=${NODE_TYPE},DEVICE_TYPE=${DEVICE_TYPE}
 EOF
     ;;
   custom)
