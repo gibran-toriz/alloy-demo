@@ -1,54 +1,211 @@
-# Alloy Retail Observability Demo: Operations & Knowledge Guide
+# Alloy Retail Observability Demo - Guía de Operaciones
 
-This document captures the essential knowledge, setup, and operational procedures for the Alloy-based scalable observability demo for a large retailer scenario. It covers architecture, dynamic node management, troubleshooting, and key metrics.
+## 1. Visión General
 
----
+### Arquitectura
 
-## Architecture Overview
-
-- **Central Stack:**
-  - **Loki**: Centralized log aggregation (port 3100)
-  - **Mimir**: Centralized metrics storage (ports 9009, 9095)
-  - **Grafana**: Visualization and dashboards (port 3000)
-- **Node Types:**
-  - **Router**: Network device monitoring (port 9400, UI: 12348)
-  - **Switch**: Network switching infrastructure (port 9401, UI: 12350)
-  - **POS**: Point of Sale terminals (port 9300, UI: 12349)
-  - **Server**: Application servers (port 9100, UI: 12351)
-- **Key Features:**
-  - Each node runs its own Alloy agent and relevant exporter(s)
-  - Node metadata (region, location, type, device, brand) set via environment variables
-  - Problem mode simulation via `PROBLEM_MODE` environment variable
-  - Log collection from `/var/log/hostlogs/` mounted directory
-  - All nodes report to the central stack
-
----
-
-## Quickstart: Running the Demo
-
-### 1. Build the Node Images
-
-```bash
-# Make the build script executable
-chmod +x build_node_images.sh
-
-# Build all node images
-./build_node_images.sh
+```
++------------------+     +------------------+     +------------------+
+|                  |     |                  |     |                  |
+|    Nodos POS     |<--->|   Stack Central  |<--->|    Grafana       |
+|   (Alloy)        |     |   (Loki, Mimir)  |     |   (Dashboards)   |
+|                  |     |                  |     |                  |
++------------------+     +------------------+     +------------------+
+         ^
+         |
++--------+-------------+
+|                      |
+|  Red y Servidores    |
+|  (Routers, Switches) |
+|                      |
++----------------------+
 ```
 
-### 2. Generate Test Logs
+### Componentes Principales
+
+- **Stack Central**
+  - **Loki**: Agregación centralizada de logs (puerto 3100)
+  - **Mimir**: Almacenamiento de métricas (puertos 9009, 9095)
+  - **Grafana**: Visualización (puerto 3000, usuario/contraseña: admin/admin)
+
+- **Tipos de Nodos**
+  | Tipo   | Puerto | Puerto UI | Descripción                  |
+  |--------|--------|-----------|------------------------------|
+  | Router | 9400   | 12348     | Dispositivos de red          |
+  | Switch | 9401   | 12350     | Infraestructura de red       |
+  | POS    | 9300   | 12349     | Terminales punto de venta    |
+  | Server | 9100   | 12351     | Servidores de aplicaciones   |
+
+## 2. Inicio Rápido
+
+### 1. Construir Imágenes
 
 ```bash
-# Make the log generation script executable
-chmod +x generate_test_logs.sh
+# Hacer ejecutables los scripts
+chmod +x build_node_images.sh generate_test_logs.sh
 
-# Generate sample log files in /tmp/*-logs directories
+# Construir imágenes
+./build_node_images.sh
+
+# Generar logs de prueba
 ./generate_test_logs.sh
 ```
 
-### 3. Start the Central Observability Stack
+### 2. Iniciar Stack Central
 
 ```bash
+# Iniciar servicios centrales
+docker compose up -d loki mimir grafana
+```
+
+### 3. Iniciar Nodos
+
+#### Nodo POS (Punto de Venta)
+```bash
+docker run -d --name pos1 \
+  -e NODE_TYPE=pos \
+  -e REGION=region1 \
+  -e LOCATION=store-1 \
+  -e BRAND=acme \
+  -e PROBLEM_MODE=healthy \
+  -p 9300:9300 \
+  -p 12349:12345 \
+  --network alloy-demo_alloy_net \
+  --volume /tmp/pos-logs:/var/log/hostlogs \
+  alloy-demo-node:pos
+```
+
+#### Nodo Router
+```bash
+docker run -d --name router1 \
+  -e NODE_TYPE=router \
+  -e REGION=region1 \
+  -e LOCATION=datacenter-1 \
+  -e DEVICE=core-router-01 \
+  -e DEVICE_TYPE=cisco-nexus \
+  -e PROBLEM_MODE=healthy \
+  -p 9400:9400 \
+  -p 12348:12345 \
+  --network alloy-demo_alloy_net \
+  --volume /tmp/router-logs:/var/log/hostlogs \
+  alloy-demo-node:router
+```
+
+## 3. Gestión de Nodos
+
+### Variables de Entorno Comunes
+
+| Variable       | Requerido | Ejemplo         | Descripción                              |
+|----------------|-----------|-----------------|------------------------------------------|
+| NODE_TYPE      | Sí       | pos, router     | Tipo de nodo                             |
+| REGION         | Sí       | region1         | Región geográfica                        |
+| LOCATION       | Sí       | store-1         | Ubicación física                         |
+| BRAND          | Sí       | acme            | Marca/Organización                      |
+| PROBLEM_MODE   | No       | healthy/problem | Simular problemas                       |
+| DEVICE         | Red*     | core-router-01  | Identificador del dispositivo de red     |
+| DEVICE_TYPE    | Red*     | cisco-nexus     | Tipo de dispositivo de red              |
+
+*Requerido solo para nodos de red (router, switch)
+
+### Comandos Útiles
+
+```bash
+# Ver nodos en ejecución
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+# Ver logs de un nodo
+docker logs <nombre-nodo>
+
+# Detener un nodo
+docker stop <nombre-nodo>
+
+# Eliminar un nodo
+docker rm <nombre-nodo>
+```
+
+## 4. Monitoreo
+
+### Acceso a Grafana
+- URL: http://localhost:3000
+- Usuario: admin
+- Contraseña: admin
+
+### Consultas Útiles
+
+#### Métricas Básicas
+```promql
+# Estado de los nodos
+up{job=~"node|pos|router|switch"}
+
+# Uso de CPU
+100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+# Memoria disponible
+node_memory_MemAvailable_bytes / 1024 / 1024
+```
+
+#### Logs
+```logql
+# Ver logs de error
+{node_type=~"pos|router|switch"} |~ "error|fail|exception"
+
+# Filtrar por ubicación
+{location="store-1"}
+```
+
+## 5. Solución de Problemas
+
+### Métricas no aparecen
+1. Verificar que el nodo esté en ejecución
+2. Comprobar conexión al stack central:
+   ```bash
+   # Desde el contenedor del nodo
+   curl http://loki:3100/ready
+   curl http://mimir:9009/ready
+   ```
+3. Revisar logs de Alloy:
+   ```bash
+   docker logs <nombre-nodo> 2>&1 | grep -i error
+   ```
+
+### Logs faltantes
+1. Verificar que el directorio de logs esté montado:
+   ```bash
+   docker exec <nombre-nodo> ls -la /var/log/hostlogs/
+   ```
+2. Comprobar permisos de lectura
+3. Verificar configuración de Loki en el nodo
+
+## 6. Referencia Rápida
+
+### Puertos
+| Servicio | Puerto |
+|----------|--------|
+| Grafana  | 3000   |
+| Loki     | 3100   |
+| Mimir    | 9009   |
+| Mimir UI | 9095   |
+
+### Estructura de Directorios
+```
+.
+├── configs/           # Configuraciones de Alloy
+├── custom_exporters/  # Exportadores personalizados
+├── grafana/
+│   └── provisioning/  # Dashboards y fuentes de datos
+├── docker-compose.yaml
+└── build_node_images.sh
+```
+
+## 7. Próximos Pasos
+
+1. Personalizar dashboards en Grafana
+2. Configurar alertas
+3. Añadir más nodos según sea necesario
+4. Implementar autenticación segura
+
+---
+*Última actualización: 2025-06-04*
 docker compose up -d loki mimir grafana
 ```
 
@@ -309,11 +466,16 @@ groups:
       description: "Packet loss on {{ $labels.device }} is {{ $value }}% (over 5% threshold)"
 ```
 
-### 2. Start Example Static Nodes
+### 2. Iniciar Nodos de Ejemplo
 ```sh
-docker compose up -d alloy_region1_server alloy_region1_pos alloy_region1_router alloy_region1_switch
+docker compose up -d alloy_region1_server alloy_region1_pos alloy_region1_router
 ```
-(Or any subset you wish.)
+
+O cualquier subconjunto que desees. Los nodos disponibles son:
+- `alloy_region1_server`: Servidor de aplicaciones
+- `alloy_region1_pos`: Terminal punto de venta
+- `alloy_region1_router`: Router de red
+- `alloy_region1_switch`: Switch de red
 
 ### 3. Dynamically Add a Node (using the template)
 For a POS node:
@@ -341,35 +503,64 @@ docker compose run -d --name node2 \
 ```
 (Adjust `--name`, env vars, and ports as needed for your scenario.)
 
-### 4. Stop and Remove Nodes
-To stop a node:
+### 4. Detener y Eliminar Nodos
+
+Para detener un nodo:
 ```sh
-docker compose stop node1
+docker compose stop <nombre-del-nodo>
 ```
-To remove a node:
+
+Para eliminar un nodo:
 ```sh
-docker compose rm -f node1
+docker compose rm -f <nombre-del-nodo>
+```
+
+Ejemplo para el nodo POS:
+```sh
+docker compose stop pos1
+docker compose rm -f pos1
 ```
 
 ---
 
-## Dynamic Node Template
-- The `alloy_node_template` service in `docker-compose.yaml` allows you to create new nodes on the fly with custom metadata and port mappings.
-- Only the correct exporter and Alloy agent are started per node, thanks to the dynamic `entrypoint.sh` script.
+## Solución de Problemas
 
----
+### Problemas Comunes
 
-## Troubleshooting
-- **Alloy Fails to Start:**
-  - Check `/tmp/alloy_stderr.log` in the container for errors:
-    ```sh
-    docker exec <container_name> tail -50 /tmp/alloy_stderr.log
-    ```
-  - Common issues: missing env vars, config errors, network issues to Loki/Mimir.
-- **Exporter Not Running:**
-  - Ensure the correct `NODE_TYPE`, `DEVICE_TYPE`, and other env vars are set.
-- **Metrics/Logs Not Appearing in Grafana:**
-  - Check that the node is running and reporting to the correct central stack endpoints.
+- **Alloy no inicia:**
+  ```sh
+  # Verificar logs de error
+  docker exec <nombre_contenedor> tail -50 /tmp/alloy_stderr.log
+  ```
+  - Causas comunes: variables de entorno faltantes, errores de configuración, problemas de red con Loki/Mimir
+
+- **Exportador no se ejecuta:**
+  - Verificar que las variables de entorno sean correctas (`NODE_TYPE`, `DEVICE_TYPE`, etc.)
+  - Revisar logs del contenedor: `docker logs <nombre_contenedor>`
+
+- **Métricas/Logs no aparecen en Grafana:**
+  - Verificar que el nodo esté en ejecución
+  - Confirmar que el nodo se esté reportando a los endpoints correctos
+  - Revisar la red del contenedor: `docker network inspect alloy-demo_alloy_net`
+
+### Comandos Útiles
+
+```sh
+# Ver contenedores en ejecución
+docker ps
+
+# Ver logs de un contenedor
+docker logs <nombre_contenedor>
+
+# Ver métricas de Alloy
+docker exec <nombre_contenedor> wget -qO- http://localhost:12345/metrics
+
+# Inspeccionar red
+docker network inspect alloy-demo_alloy_net
+
+# Ver variables de entorno de un contenedor
+docker inspect <nombre_contenedor> --format '{{.Config.Env}}' | tr ' ' '\n'
+```
 
 ---
 
@@ -388,52 +579,31 @@ See `METRICS_REFERENCE.md` for a full list of all metrics, labels, and example q
 
 ---
 
-## Best Practices
-- Always rebuild the image after changing `config.river` or exporter scripts:
-  ```sh
-  docker compose build alloy_node_template
-  ```
-- Use unique port mappings for each dynamic node to avoid conflicts.
-- Use meaningful names and env vars for each node to make dashboards and logs easy to filter.
-- To simulate problems, set `PROBLEM_MODE=problem` on any node.
+## Mejores Prácticas
+
+### Construcción de Imágenes
+```sh
+# Reconstruir imágenes después de cambios
+./build_node_images.sh
+```
+
+### Gestión de Nodos
+- Usar nombres descriptivos para los contenedores
+- Mapear puertos únicos para cada nodo
+- Usar variables de entorno consistentes
+- Para simular problemas, usar `PROBLEM_MODE=problem`
+- Para nodos sanos, usar `PROBLEM_MODE=healthy`
+
+### Monitoreo
+- Verificar métricas en Grafana: http://localhost:3000
+- Usuario: admin
+- Contraseña: admin
+
+## Lecturas Adicionales
+- `METRICS_REFERENCE.md`: Detalles de métricas y consultas PromQL
+- `README.md`: Información general del proyecto
 
 ---
 
-## Example: Full Demo Workflow
-1. Start the stack:
-   ```sh
-   docker compose up -d loki mimir grafana
-   ```
-2. Add a healthy POS node:
-   ```sh
-   docker compose run -d --name pos-demo \
-     -e NODE_TYPE=pos \
-     -e REGION=us-east \
-     -e LOCATION=store-101 \
-     -e BRAND=brand1 \
-     -e PROBLEM_MODE=healthy \
-     -p 9311:9300 alloy_node_template
-   ```
-3. Add a problematic router:
-   ```sh
-   docker compose run -d --name router-demo \
-     -e NODE_TYPE=router \
-     -e DEVICE_TYPE=router \
-     -e DEVICE=router-99 \
-     -e REGION=us-east \
-     -e LOCATION=store-101 \
-     -e PROBLEM_MODE=problem \
-     -p 9412:9400 alloy_node_template
-   ```
-4. View dashboards at [http://localhost:3000](http://localhost:3000) (admin/admin)
-5. Stop and remove nodes as needed.
-
----
-
-## Further Reading
-- See `METRICS_REFERENCE.md` for all metric/label details and example PromQL queries.
-- See `README.md` for project background and architecture.
-
----
-
-*This document is auto-generated to capture the operational knowledge and best practices for running and extending the Alloy Retail Observability Demo.*
+*Documento actualizado: 2025-06-04*
+*Mantener este documento actualizado con los comandos y configuraciones correctas*
