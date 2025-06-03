@@ -8,11 +8,11 @@ logging {
 prometheus.scrape "node_exporter" {
   targets = [{
     __address__ = "localhost:9100",
+    brand = env("BRAND"),
     region = env("REGION"),
     location = env("LOCATION"),
     type = "server",
-    brand = env("BRAND"),
-    instance = env("HOSTNAME"),
+    problem = env("PROBLEM_MODE"),
   }]
   forward_to = [prometheus.remote_write.prom.receiver]
   
@@ -21,19 +21,16 @@ prometheus.scrape "node_exporter" {
   scrape_timeout = "10s"
 }
 
-// Remote Write Configuration
-prometheus.remote_write "prom" {
+// Loki configuration for logs
+loki.write "loki" {
   endpoint {
-    url = "http://mimir:9009/api/v1/push"
+    url = "http://loki:3100/loki/api/v1/push"
   }
-  
-  // Add external labels to all metrics
   external_labels = {
+    brand = env("BRAND"),
     region = env("REGION"),
     location = env("LOCATION"),
-    node_type = "server",
-    brand = env("BRAND"),
-    instance = env("HOSTNAME"),
+    type = "server",
   }
 }
 
@@ -41,26 +38,17 @@ prometheus.remote_write "prom" {
 loki.source.file "server_logs" {
   targets = [{
     __path__ = "/var/log/hostlogs/server-core.log",
-    region = env("REGION"),
-    location = env("LOCATION"),
-    type = "server",
     job = "server_logs",
-    brand = env("BRAND"),
-    instance = env("HOSTNAME"),
   }]
   forward_to = [loki.write.loki.receiver]
 }
 
-// Loki configuration for logs
-loki.write "loki" {
+// Remote Write Configuration
+prometheus.remote_write "prom" {
   endpoint {
-    url = "http://loki:3100/loki/api/v1/push"
-  }
-  external_labels = {
-    region = env("REGION"),
-    location = env("LOCATION"),
-    node_type = "server",
-    brand = env("BRAND"),
-    instance = env("HOSTNAME"),
+    url = "http://mimir:9009/api/v1/push"
+    headers = {
+      "X-Scope-OrgID" = "demo",
+    }
   }
 }
