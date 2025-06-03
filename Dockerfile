@@ -19,8 +19,8 @@ RUN mkdir -p /etc/apt/keyrings && \
 RUN mkdir -p /etc/alloy /var/log/hostlogs /opt/custom_exporters /data-alloy /etc/supervisor/conf.d
 
 # Copia archivos
-COPY config.river /etc/alloy/config.river
-COPY supervisord.conf /etc/supervisord.conf
+ARG NODE_TYPE=pos
+COPY configs/${NODE_TYPE}.river /etc/alloy/config.river
 
 # Copia los scripts de exportadores
 COPY custom_exporters/*.sh /opt/custom_exporters/
@@ -30,6 +30,9 @@ COPY entrypoint.sh /opt/entrypoint.sh
 
 # Da permisos a los scripts
 RUN chmod +x /opt/custom_exporters/*.sh /opt/entrypoint.sh
+
+# Set the entrypoint
+ENTRYPOINT ["/opt/entrypoint.sh"]
 
 # Expone puertos
 # 9100: Node Exporter
