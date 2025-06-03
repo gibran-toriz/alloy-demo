@@ -70,6 +70,7 @@ services:
       - LOCATION=store-1
       - NODE_TYPE=pos
       - PROBLEM_MODE=healthy
+      - BRAND=brand1
     volumes:
       - ./hostlogs:/var/log/hostlogs
     depends_on:
@@ -77,8 +78,7 @@ services:
       - mimir
     ports:
       - "9310:9300"    # POS Exporter
-    command: ["/bin/bash", "/opt/custom_exporters/retail_pos_exporter.sh", "9300"]
-  
+    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
   alloy_region1_router:
     build: .
@@ -98,7 +98,7 @@ services:
       - mimir
     ports:
       - "9410:9400"    # Router Exporter
-    command: ["/bin/bash", "/opt/custom_exporters/network_device_exporter.sh", "9400"]
+    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
   alloy_region1_switch:
     build: .
@@ -118,7 +118,7 @@ services:
       - mimir
     ports:
       - "9411:9401"    # Switch Exporter
-    command: ["/bin/bash", "/opt/custom_exporters/network_device_exporter.sh", "9401"]
+    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
   # --- Region 2 Nodes ---
   alloy_region2_server:
@@ -153,6 +153,7 @@ services:
       - LOCATION=store-2
       - NODE_TYPE=pos
       - PROBLEM_MODE=healthy
+      - BRAND=brand1
     volumes:
       - ./hostlogs:/var/log/hostlogs
     depends_on:
@@ -160,7 +161,7 @@ services:
       - mimir
     ports:
       - "9320:9300"
-    command: ["/bin/bash", "/opt/custom_exporters/retail_pos_exporter.sh", "9300"]
+    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
   alloy_region2_router:
     build: .
@@ -180,7 +181,7 @@ services:
       - mimir
     ports:
       - "9420:9400"
-    command: ["/bin/bash", "/opt/custom_exporters/network_device_exporter.sh", "9400"]
+    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
   alloy_region2_switch:
     build: .
@@ -200,7 +201,7 @@ services:
       - mimir
     ports:
       - "9421:9401"
-    command: ["/bin/bash", "/opt/custom_exporters/network_device_exporter.sh", "9401"]
+    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
   # --- Example: Add a problematic node in region1 ---
   alloy_region1_pos_problem:
@@ -212,6 +213,7 @@ services:
       - LOCATION=store-1
       - NODE_TYPE=pos
       - PROBLEM_MODE=problem
+      - BRAND=brand1
     volumes:
       - ./hostlogs:/var/log/hostlogs
     depends_on:
@@ -219,7 +221,36 @@ services:
       - mimir
     ports:
       - "9330:9300"
-    command: ["/bin/bash", "/opt/custom_exporters/retail_pos_exporter.sh", "9300"]
+    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+
+  # --- Dynamic Node Template ---
+  # Use this service as a template for dynamic node creation.
+  # Example usage:
+  #   docker compose up -d --no-deps --name node1 alloy_node_template
+  #   docker compose run -d --name node2 -e REGION=region3 -e LOCATION=store-3 -e NODE_TYPE=pos -e PROBLEM_MODE=healthy -p 9500:9300 alloy_node_template
+  #
+  # You can override environment variables and ports at runtime.
+  #
+  alloy_node_template:
+    build: .
+    privileged: true
+    environment:
+      - REGION=changeme
+      - LOCATION=changeme
+      - NODE_TYPE=changeme
+      - PROBLEM_MODE=healthy
+      # Add more env vars as needed (e.g., BRAND, DEVICE, DEVICE_TYPE)
+    volumes:
+      - ./hostlogs:/var/log/hostlogs
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/host:ro
+    depends_on:
+      - loki
+      - mimir
+    entrypoint: ["/opt/entrypoint.sh"]
+    # No ports by default; specify with -p at runtime
+    command: ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
 volumes:
   grafana-storage:

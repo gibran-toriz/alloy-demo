@@ -25,8 +25,11 @@ COPY supervisord.conf /etc/supervisord.conf
 # Copia los scripts de exportadores
 COPY custom_exporters/*.sh /opt/custom_exporters/
 
+# Copia el script de entrypoint
+COPY entrypoint.sh /opt/entrypoint.sh
+
 # Da permisos a los scripts
-RUN chmod +x /opt/custom_exporters/*.sh
+RUN chmod +x /opt/custom_exporters/*.sh /opt/entrypoint.sh
 
 # Expone puertos
 # 9100: Node Exporter
