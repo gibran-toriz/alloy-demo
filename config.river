@@ -3,61 +3,38 @@ logging {
   format = "logfmt"
 }
 
-// System Metrics (example for region1 and region2 servers)
-prometheus.scrape "node_exporter_region1" {
-  targets = [{ __address__ = "host.docker.internal:9110", region="region1", location="store-1", type="server" }]
-  forward_to = [prometheus.remote_write.prom.receiver]
-}
-prometheus.scrape "node_exporter_region2" {
-  targets = [{ __address__ = "host.docker.internal:9120", region="region2", location="store-2", type="server" }]
+// System Metrics (Node Exporter)
+prometheus.scrape "node_exporter" {
+  targets = [{ __address__ = "localhost:9100", region = env("REGION"), location = env("LOCATION"), type = env("NODE_TYPE") }]
   forward_to = [prometheus.remote_write.prom.receiver]
 }
 
-// Custom Exporters (example for region1 and region2)
-prometheus.scrape "custom_exporter_region1" {
-  targets = [{ __address__ = "host.docker.internal:9210", region="region1", location="store-1", type="server" }]
+// Custom Exporter (if present)
+prometheus.scrape "custom_exporter" {
+  targets = [{ __address__ = "localhost:9200", region = env("REGION"), location = env("LOCATION"), type = env("NODE_TYPE") }]
   forward_to = [prometheus.remote_write.prom.receiver]
 }
-prometheus.scrape "custom_exporter_region2" {
-  targets = [{ __address__ = "host.docker.internal:9220", region="region2", location="store-2", type="server" }]
+
+// POS Exporter (if present)
+prometheus.scrape "pos_exporter" {
+  targets = [{ __address__ = "localhost:9300", brand = env("BRAND"), region = env("REGION"), location = env("LOCATION"), type = env("NODE_TYPE"), problem = env("PROBLEM_MODE") }]
+  forward_to = [prometheus.remote_write.prom.receiver]
+}
+
+// Network Device Exporter (if present)
+prometheus.scrape "network_device_exporter" {
+  targets = [{ __address__ = "localhost:9400", device = env("DEVICE"), region = env("REGION"), location = env("LOCATION"), type = env("DEVICE_TYPE"), problem = env("PROBLEM_MODE") }]
+  forward_to = [prometheus.remote_write.prom.receiver]
+}
+prometheus.scrape "network_device_exporter2" {
+  targets = [{ __address__ = "localhost:9401", device = env("DEVICE"), region = env("REGION"), location = env("LOCATION"), type = env("DEVICE_TYPE"), problem = env("PROBLEM_MODE") }]
   forward_to = [prometheus.remote_write.prom.receiver]
 }
 
 // Log Collection
 loki.source.file "example_logs" {
-  targets = [{ __path__ = "/var/log/hostlogs/app.log" }]
+  targets = [{ __path__ = "/var/log/hostlogs/app.log", region = env("REGION"), location = env("LOCATION"), type = env("NODE_TYPE") }]
   forward_to = [loki.write.local.receiver]
-}
-
-// POS Systems
-prometheus.scrape "pos_brand1_region1" {
-  targets = [
-    { __address__ = "host.docker.internal:9310", brand="brand1", region="region1", location="store-1", type="pos" },    
-    { __address__ = "host.docker.internal:9330", brand="brand1", region="region1", location="store-1", type="pos", problem="true" }, // Problem node
-  ]
-  forward_to = [prometheus.remote_write.prom.receiver]
-}
-prometheus.scrape "pos_brand1_region2" {
-  targets = [
-    { __address__ = "host.docker.internal:9320", brand="brand1", region="region2", location="store-2", type="pos" },
-  ]
-  forward_to = [prometheus.remote_write.prom.receiver]
-}
-
-// Network Devices
-prometheus.scrape "network_devices_region1" {
-  targets = [
-    { __address__ = "host.docker.internal:9410", device="router-1", region="region1", location="store-1", type="router" },
-    { __address__ = "host.docker.internal:9411", device="switch-1", region="region1", location="store-1", type="switch" },
-  ]
-  forward_to = [prometheus.remote_write.prom.receiver]
-}
-prometheus.scrape "network_devices_region2" {
-  targets = [
-    { __address__ = "host.docker.internal:9420", device="router-2", region="region2", location="store-2", type="router" },
-    { __address__ = "host.docker.internal:9421", device="switch-2", region="region2", location="store-2", type="switch" },
-  ]
-  forward_to = [prometheus.remote_write.prom.receiver]
 }
 
 prometheus.remote_write "prom" {
