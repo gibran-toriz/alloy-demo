@@ -18,26 +18,29 @@ prometheus.scrape "pos_exporter" {
 }
 
 // Log Collection
-loki.write "local" {
+loki.write "loki" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
   }
   external_labels = {
-    source = "alloy",
+    brand = env("BRAND"),
+    region = env("REGION"),
+    location = env("LOCATION"),
+    type = "pos",
+    node_type = "pos",
   }
 }
 
 loki.source.file "pos_logs" {
-  targets = [
-    {
-      __path__ = "/var/log/pos.log",
-      job = "pos_logs",
-      region = env("REGION"),
-      location = env("LOCATION"),
-      type = "pos",
-    },
-  ]
-  forward_to = [loki.write.local.receiver]
+  targets = [{
+    __path__ = "/var/log/hostlogs/pos-core.log",
+    brand = env("BRAND"),
+    region = env("REGION"),
+    location = env("LOCATION"),
+    type = "pos",
+    job = "pos_logs",
+  }]
+  forward_to = [loki.write.loki.receiver]
 }
 
 // Remote Write Configuration

@@ -27,7 +27,7 @@ case "$NODE_TYPE" in
 command=/usr/bin/prometheus-node-exporter --web.listen-address=:9100 --collector.disable-defaults --collector.cpu --collector.meminfo --collector.loadavg --collector.uname
 autorestart=true
 user=root
-environment=NODE_TYPE=%(ENV_NODE_TYPE)s
+environment=NODE_TYPE=${NODE_TYPE},PROBLEM_MODE=${PROBLEM_MODE:-healthy}
 EOF
     ;;
   pos)
@@ -36,7 +36,7 @@ EOF
 command=/bin/bash /opt/custom_exporters/retail_pos_exporter.sh 9300
 autorestart=true
 user=root
-environment=NODE_TYPE=%(ENV_NODE_TYPE)s
+environment=NODE_TYPE=${NODE_TYPE},PROBLEM_MODE=${PROBLEM_MODE:-healthy}
 EOF
     ;;
   router)
@@ -50,7 +50,7 @@ EOF
 command=/bin/bash /opt/custom_exporters/network_device_exporter.sh 9400
 autorestart=true
 user=root
-environment=NODE_TYPE=${NODE_TYPE},DEVICE_TYPE=${DEVICE_TYPE}
+environment=NODE_TYPE=${NODE_TYPE},DEVICE_TYPE=${DEVICE_TYPE},PROBLEM_MODE=${PROBLEM_MODE:-healthy}
 EOF
     ;;
   switch)
@@ -64,7 +64,7 @@ EOF
 command=/bin/bash /opt/custom_exporters/network_device_exporter.sh 9401
 autorestart=true
 user=root
-environment=NODE_TYPE=${NODE_TYPE},DEVICE_TYPE=${DEVICE_TYPE}
+environment=NODE_TYPE=${NODE_TYPE},DEVICE_TYPE=${DEVICE_TYPE},PROBLEM_MODE=${PROBLEM_MODE:-healthy}
 EOF
     ;;
   custom)
