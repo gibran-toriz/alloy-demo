@@ -4,32 +4,25 @@ logging {
   format = "logfmt"
 }
 
-// Network Device Exporter Configuration
-prometheus.scrape "network_device_exporter" {
+// Network Device Exporter Configuration for Router
+prometheus.scrape "router_exporter" {
   targets = [{
     __address__ = "localhost:9400",
+    brand = env("BRAND"),
     region = env("REGION"),
     location = env("LOCATION"),
-    device = env("DEVICE"),
-    device_type = env("DEVICE_TYPE"),
-    type = "network_device",
+    type = "router",
+    problem = env("PROBLEM_MODE"),
   }]
   forward_to = [prometheus.remote_write.prom.receiver]
 }
 
-// Log collection for network device logs
-loki.source.file "network_logs" {
+// Log collection for router logs
+loki.source.file "router_logs" {
   targets = [{
-    __path__ = "/var/log/hostlogs/network-core.log",
-    region = env("REGION"),
-    location = env("LOCATION"),
-    device = env("DEVICE"),
-    device_type = env("DEVICE_TYPE"),
-    type = "network_device",
-    job = "network_logs",
+    __path__ = "/var/log/hostlogs/router-core.log",
+    job = "router_logs",
   }]
-  
-  // Forward logs to Loki
   forward_to = [loki.write.loki.receiver]
 }
 
@@ -39,26 +32,19 @@ loki.write "loki" {
     url = "http://loki:3100/loki/api/v1/push"
   }
   external_labels = {
+    brand = env("BRAND"),
     region = env("REGION"),
     location = env("LOCATION"),
-    device = env("DEVICE"),
-    device_type = env("DEVICE_TYPE"),
-    node_type = "router",
+    type = "router",
   }
 }
 
-// Remote Write Configuration for metrics
+// Remote Write Configuration
 prometheus.remote_write "prom" {
   endpoint {
     url = "http://mimir:9009/api/v1/push"
-  }
-  
-  // Add external labels to all metrics
-  external_labels = {
-    region = env("REGION"),
-    location = env("LOCATION"),
-    device = env("DEVICE"),
-    device_type = env("DEVICE_TYPE"),
-    node_type = "network_device",
+    headers = {
+      "X-Scope-OrgID" = "demo",
+    }
   }
 }

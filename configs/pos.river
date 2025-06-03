@@ -27,17 +27,12 @@ loki.write "loki" {
     region = env("REGION"),
     location = env("LOCATION"),
     type = "pos",
-    node_type = "pos",
   }
 }
 
 loki.source.file "pos_logs" {
   targets = [{
     __path__ = "/var/log/hostlogs/pos-core.log",
-    brand = env("BRAND"),
-    region = env("REGION"),
-    location = env("LOCATION"),
-    type = "pos",
     job = "pos_logs",
   }]
   forward_to = [loki.write.loki.receiver]
@@ -47,5 +42,8 @@ loki.source.file "pos_logs" {
 prometheus.remote_write "prom" {
   endpoint {
     url = "http://mimir:9009/api/v1/push"
+    headers = {
+      "X-Scope-OrgID" = "demo",
+    }
   }
 }

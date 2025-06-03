@@ -1,0 +1,28 @@
+// Configuración mínima para probar el switch
+logging {
+  level  = "debug"
+  format = "logfmt"
+}
+
+// Configuración básica de recolección de métricas
+prometheus.scrape "self" {
+  targets = [{
+    __address__ = "localhost:9100",
+    brand = env("BRAND"),
+    region = env("REGION"),
+    location = env("LOCATION"),
+    type = "switch",
+    problem = env("PROBLEM_MODE"),
+  }]
+  forward_to = [prometheus.remote_write.prom.receiver]
+}
+
+// Configuración básica de envío de métricas
+prometheus.remote_write "prom" {
+  endpoint {
+    url = "http://mimir:9009/api/v1/push"
+    headers = {
+      "X-Scope-OrgID" = "demo",
+    }
+  }
+}
