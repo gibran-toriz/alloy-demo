@@ -7,7 +7,7 @@ logging {
 // Node Exporter Configuration
 prometheus.scrape "node_exporter" {
   targets = [{
-    __address__ = "localhost:9100",
+    __address__ = "localhost:9600",
     brand = env("BRAND"),
     region = env("REGION"),
     location = env("LOCATION"),
@@ -30,16 +30,36 @@ loki.write "loki" {
     brand = env("BRAND"),
     region = env("REGION"),
     location = env("LOCATION"),
+    device = env("DEVICE"),
+    device_type = "server",
     type = "server",
   }
 }
 
 // Log collection for server logs
 loki.source.file "server_logs" {
-  targets = [{
-    __path__ = "/var/log/hostlogs/server-core.log",
-    job = "server_logs",
-  }]
+  targets = [
+    {
+      __path__ = "/var/log/hostlogs/server-core.log",
+      __address__ = "localhost",
+      region = env("REGION"),
+      location = env("LOCATION"),
+      device = env("DEVICE"),
+      device_type = "server",
+      type = "server",
+      job = "server_logs",
+    },
+    {
+      __path__ = "/var/log/hostlogs/server-system.log",
+      __address__ = "localhost",
+      region = env("REGION"),
+      location = env("LOCATION"),
+      device = env("DEVICE"),
+      device_type = "server",
+      type = "server",
+      job = "server_logs",
+    },
+  ]
   forward_to = [loki.write.loki.receiver]
 }
 

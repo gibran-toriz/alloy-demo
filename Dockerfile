@@ -39,8 +39,10 @@ ENTRYPOINT ["/opt/entrypoint.sh"]
 # 9200: Custom Exporter
 # 9300-9301: Retail POS Exporters
 # 9400-9401: Network Device Exporters
+# 9500: Switch Exporter
+# 9600-9601: Server Exporters
 # 12345: Alloy UI
-EXPOSE 9100 9200 9300-9301 9400-9401 12345
+EXPOSE 9100 9200 9300-9301 9400-9401 9500 9600-9601 12345
 
 # Comando por defecto
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

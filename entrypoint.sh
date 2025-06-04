@@ -23,11 +23,11 @@ EOF
 case "$NODE_TYPE" in
   server)
     cat >> $SUPERVISOR_CONF <<EOF
-[program:node_exporter]
-command=/usr/bin/prometheus-node-exporter --web.listen-address=:9100 --collector.disable-defaults --collector.cpu --collector.meminfo --collector.loadavg --collector.uname
+[program:server_exporter]
+command=/bin/bash /opt/custom_exporters/server_exporter.sh 9600
 autorestart=true
 user=root
-environment=NODE_TYPE=${NODE_TYPE},PROBLEM_MODE=${PROBLEM_MODE:-healthy}
+environment=NODE_TYPE=${NODE_TYPE},REGION=${REGION:-region1},LOCATION=${LOCATION:-datacenter1},BRAND=${BRAND:-retail},PROBLEM_MODE=${PROBLEM_MODE:-healthy}
 EOF
     ;;
   pos)
@@ -54,17 +54,34 @@ environment=NODE_TYPE=${NODE_TYPE},DEVICE_TYPE=${DEVICE_TYPE},PROBLEM_MODE=${PRO
 EOF
     ;;
   switch)
-    # Establecer valor predeterminado para DEVICE_TYPE si no está definido
-    if [ -z "$DEVICE_TYPE" ]; then
-      DEVICE_TYPE="unknown"
-    fi
+    # Establecer valores predeterminados si no están definidos
+    DEVICE_TYPE=${DEVICE_TYPE:-switch}
+    REGION=${REGION:-region1}
+    LOCATION=${LOCATION:-datacenter1}
+    BRAND=${BRAND:-retail}
+    PROBLEM_MODE=${PROBLEM_MODE:-healthy}
+    DEVICE=${DEVICE:-switch-1}
     
     cat >> $SUPERVISOR_CONF <<EOF
 [program:network_device_exporter_switch]
-command=/bin/bash /opt/custom_exporters/network_device_exporter.sh 9401
+command=/bin/bash /opt/custom_exporters/network_device_exporter.sh 9500
 autorestart=true
 user=root
-environment=NODE_TYPE=${NODE_TYPE},DEVICE_TYPE=${DEVICE_TYPE},PROBLEM_MODE=${PROBLEM_MODE:-healthy}
+environment=REGION="$REGION",LOCATION="$LOCATION",BRAND="$BRAND",DEVICE="$DEVICE",NODE_TYPE="$NODE_TYPE",DEVICE_TYPE="$DEVICE_TYPE",PROBLEM_MODE="$PROBLEM_MODE"
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+
+[program:alloy]
+command=/usr/bin/alloy run /etc/alloy/config.river
+autorestart=true
+user=root
+environment=REGION="$REGION",LOCATION="$LOCATION",BRAND="$BRAND",DEVICE="$DEVICE",NODE_TYPE="$NODE_TYPE",DEVICE_TYPE="$DEVICE_TYPE",PROBLEM_MODE="$PROBLEM_MODE"
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
 EOF
     ;;
   custom)
