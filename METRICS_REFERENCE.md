@@ -1,5 +1,7 @@
 # Metrics Reference
 
+> **Note:** This document is the single source of truth for all exporter metrics, labels, usage examples, and queries in the Alloy Retail Observability Demo. It replaces any separate summary files.
+
 This document provides a comprehensive reference of all metrics exposed by the exporters in the observability stack.
 
 ## Table of Contents
@@ -23,6 +25,13 @@ This document provides a comprehensive reference of all metrics exposed by the e
 | `pos_system_uptime_seconds` | Counter | System uptime in seconds | `brand`, `location` |
 | `pos_cpu_usage` | Gauge | CPU usage percentage | `brand`, `location`, `cpu` |
 | `pos_memory_usage_bytes` | Gauge | Memory usage in bytes | `brand`, `location` |
+| `pos_transaction_errors_total` | Counter | Number of failed transactions | `error_type`, `brand`, `region`, `location` |
+| `pos_payment_method_total` | Counter | Count by payment method | `method`, `brand`, `region`, `location` |
+| `pos_printer_status` | Gauge | Printer health (1=ok, 0=error) | `printer_id`, `brand`, `region`, `location` |
+| `pos_scanner_status` | Gauge | Scanner health (1=ok, 0=error) | `scanner_id`, `brand`, `region`, `location` |
+| `pos_failed_logins_total` | Counter | Failed login attempts | `brand`, `region`, `location`, `user` |
+| `pos_active_sessions` | Gauge | Number of logged-in users | `brand`, `region`, `location` |
+| `pos_network_latency_seconds` | Gauge | Network latency to central server | `brand`, `region`, `location` |
 
 ## Network Device Exporter
 
@@ -94,6 +103,8 @@ Standard Prometheus Node Exporter metrics including:
 | `custom_temperature` | Gauge | Random temperature value (40-90°C) |
 
 ## Example Queries
+
+curl -s "http://localhost:9009/prometheus/api/v1/label/__name__/values" | jq
 
 ### Retail Metrics
 ```promql

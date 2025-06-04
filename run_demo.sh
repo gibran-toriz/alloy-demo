@@ -2,12 +2,12 @@
 docker-compose down -v
 docker ps -a --filter "ancestor=alloy-demo-node:server" --filter "ancestor=alloy-demo-node:switch" --filter "ancestor=alloy-demo-node:router" --filter "ancestor=alloy-demo-node:pos" -q | xargs -r docker rm -f
 
+# Create the Alloy demo network
+docker network create alloy-demo_alloy_net
+
 # Start the stack
 ./build_node_images.sh
 docker-compose up -d 
-
-# Create the Alloy demo network
-docker network create alloy-demo_alloy_net
 
 # Create the tmp directory for logs
 ./generate_test_logs.sh
@@ -19,7 +19,7 @@ docker run -d --name pos1 \
   -e REGION=region1 \
   -e LOCATION=store-1 \
   -e BRAND=acme \
-  -e PROBLEM_MODE=problem \
+  -e PROBLEM_MODE=healthy \
   -p 9300:9300 \
   -p 12349:12345 \
   --network alloy-demo_alloy_net \
