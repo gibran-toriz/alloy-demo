@@ -12,6 +12,7 @@ prometheus.scrape "pos_exporter" {
     region = env("REGION"),
     location = env("LOCATION"),
     type = "pos",
+    device = env("DEVICE"),
     problem = env("PROBLEM_MODE"),
   }]
   forward_to = [prometheus.remote_write.prom.receiver]

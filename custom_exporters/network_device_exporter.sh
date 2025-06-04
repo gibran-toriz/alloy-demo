@@ -9,9 +9,9 @@ DEVICE_TYPE=${DEVICE_TYPE:-router}
 PROBLEM_MODE=${PROBLEM_MODE:-healthy}
 
 # Determine device type and location based on port
-if [ "$PORT" = "9401" ]; then
-    DEVICE=${DEVICE:-switch-1}
+if [ "$PORT" = "9500" ] || [ "$NODE_TYPE" = "switch" ]; then
     DEVICE_TYPE=${DEVICE_TYPE:-switch}
+    DEVICE=${DEVICE:-switch-1}
 fi
 
 echo "Starting Network Device Exporter for $DEVICE ($DEVICE_TYPE, $REGION/$LOCATION) on port $PORT, mode: $PROBLEM_MODE"
