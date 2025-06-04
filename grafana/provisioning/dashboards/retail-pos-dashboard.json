@@ -1,0 +1,260 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "prometheus", "uid": "Mimir" },
+        "enable": true,
+        "hide": true,
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "panels": [],
+      "title": "POS Operations Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "id": 2,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "sum by(location) (pos_transactions_total{region=~'$region', location=~'$location', brand=~'$brand', status='success'})", "legendFormat": "{{location}} - Success", "refId": "A" }
+      ],
+      "title": "Total Successful Transactions",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "id": 3,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "sum by(location) (pos_transactions_total{region=~'$region', location=~'$location', brand=~'$brand', status='failed'})", "legendFormat": "{{location}} - Failed", "refId": "A" }
+      ],
+      "title": "Total Failed Transactions",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "currencyUSD" } },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "id": 4,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "sum by(location) (pos_amount_total{region=~'$region', location=~'$location', brand=~'$brand'})", "legendFormat": "{{location}} - Revenue", "refId": "A" }
+      ],
+      "title": "Total Revenue",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "percent" } },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "id": 5,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "avg by(location) (pos_cpu_usage{region=~'$region', location=~'$location', brand=~'$brand'})", "legendFormat": "{{location}} - CPU", "refId": "A" }
+      ],
+      "title": "POS CPU Usage",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 6,
+      "panels": [],
+      "title": "Business & Payment Insights",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" } },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 6 },
+      "id": 7,
+      "options": { "displayMode": "pie", "legend": { "displayMode": "table", "placement": "right" } },
+      "targets": [
+        { "expr": "sum by(method) (pos_payment_method_total{region=~'$region', location=~'$location', brand=~'$brand'})", "legendFormat": "{{method}}", "refId": "A" }
+      ],
+      "title": "Payment Method Breakdown",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 6 },
+      "id": 8,
+      "options": { "orientation": "horizontal", "showValue": "always" },
+      "targets": [
+        { "expr": "sum by(product) (pos_inventory_items{region=~'$region', location=~'$location', brand=~'$brand'})", "legendFormat": "{{product}}", "refId": "A" }
+      ],
+      "title": "Inventory by Product",
+      "type": "bargauge"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 6 },
+      "id": 9,
+      "options": { "orientation": "horizontal", "showValue": "always" },
+      "targets": [
+        { "expr": "sum by(error_type) (pos_transaction_errors_total{region=~'$region', location=~'$location', brand=~'$brand'})", "legendFormat": "{{error_type}}", "refId": "A" }
+      ],
+      "title": "Transaction Errors by Type",
+      "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 },
+      "id": 10,
+      "panels": [],
+      "title": "Device & Peripheral Health",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 13 },
+      "id": 11,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "avg by(location) (pos_printer_status{region=~'$region', location=~'$location', brand=~'$brand'})", "legendFormat": "{{location}} - Printer", "refId": "A" }
+      ],
+      "title": "Printer Status",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 13 },
+      "id": 12,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "avg by(location) (pos_scanner_status{region=~'$region', location=~'$location', brand=~'$brand'})", "legendFormat": "{{location}} - Scanner", "refId": "A" }
+      ],
+      "title": "Scanner Status",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "ms" } },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 13 },
+      "id": 13,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "avg by(location) (pos_network_latency_seconds{region=~'$region', location=~'$location', brand=~'$brand'}) * 1000", "legendFormat": "{{location}} - Latency", "refId": "A" }
+      ],
+      "title": "Network Latency (ms)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+      "id": 14,
+      "panels": [],
+      "title": "Security & User Activity",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 18 },
+      "id": 15,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "sum by(location) (pos_failed_logins_total{region=~'$region', location=~'$location', brand=~'$brand'})", "legendFormat": "{{location}} - Failed Logins", "refId": "A" }
+      ],
+      "title": "Failed Login Attempts",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 18 },
+      "id": 16,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto" },
+      "targets": [
+        { "expr": "sum by(location) (pos_active_sessions{region=~'$region', location=~'$location', brand=~'$brand'})", "legendFormat": "{{location}} - Active Sessions", "refId": "A" }
+      ],
+      "title": "Active Sessions",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
+      "id": 17,
+      "panels": [],
+      "title": "POS Node Drilldown Table",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mimir", "uid": "Mimir" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "unit": "short" } },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 23 },
+      "id": 18,
+      "options": { "showHeader": true },
+      "targets": [
+        { "expr": "pos_transactions_total or pos_amount_total or pos_cpu_usage or pos_memory_usage_bytes or pos_printer_status or pos_scanner_status or pos_failed_logins_total or pos_active_sessions or pos_network_latency_seconds", "legendFormat": "{{region}} | {{location}} | {{brand}} | {{status}}", "refId": "A" }
+      ],
+      "title": "All POS Nodes Table",
+      "type": "table"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["retail", "pos", "observability"],
+  "templating": {
+    "list": [
+      {
+        "name": "region",
+        "type": "query",
+        "datasource": "Mimir",
+        "refresh": 1,
+        "query": "label_values(region)",
+        "multi": true,
+        "includeAll": true,
+        "current": { "selected": false, "text": "All", "value": "$__all" }
+      },
+      {
+        "name": "location",
+        "type": "query",
+        "datasource": "Mimir",
+        "refresh": 1,
+        "query": "label_values(location)",
+        "multi": true,
+        "includeAll": true,
+        "current": { "selected": false, "text": "All", "value": "$__all" }
+      },
+      {
+        "name": "brand",
+        "type": "query",
+        "datasource": "Mimir",
+        "refresh": 1,
+        "query": "label_values(brand)",
+        "multi": true,
+        "includeAll": true,
+        "current": { "selected": false, "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "POS Observability Dashboard",
+  "uid": "retail-pos-dashboard",
+  "version": 1
+}
