@@ -324,6 +324,16 @@
             {
                 "type": "markers",
                 "name": "POS Nodes",
+                "config": {
+                    "style": {
+                        "size": {
+                        "field": "Value",
+                        "fixed": 5,
+                        "max": 18,
+                        "min": 10
+                        }
+                    }
+                },
                 "location": {
                     "mode": "coords",
                     "latitude": "latitude",
@@ -331,7 +341,9 @@
                 },
                 "size": {
                     "field": "Value",
-                    "mode": "field"
+                    "mode": "field",
+                    "min": 500,
+                    "max": 4000
                 },
                 "color": { "mode": "fixed", "fixedColor": "red" },
                 "showLegend": true,
@@ -367,7 +379,7 @@
             "overrides": []
         },
         "pluginVersion": "10.2.3"
-        }
+    }
   ],
   "refresh": "5s",
   "schemaVersion": 38,
