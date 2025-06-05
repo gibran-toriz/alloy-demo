@@ -211,7 +211,163 @@
       ],
       "title": "All POS Nodes Table",
       "type": "table"
-    }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 },
+      "id": 100,
+      "panels": [],
+      "title": "POS Error & Warning Logs",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "Loki" },
+      "fieldConfig": { "defaults": { "custom": {} } },
+      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 32 },
+      "id": 101,
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{filename=\"/var/log/hostlogs/pos-core.log\"} |~ \"ERROR|WARN\"",
+          "refId": "A",
+          "queryType": "range",
+          "legendFormat": ""
+        }
+      ],
+      "title": "POS Error & Warning Log Table (filterable by POSID)",
+      "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "Loki" },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 32 },
+      "id": 102,
+      "options": {
+        "orientation": "vertical",
+        "showValue": "always"
+      },
+      "targets": [
+        {
+          "expr": "sum by (posid) (count_over_time({filename=\"/var/log/hostlogs/pos-core.log\"} |= \"ERROR\" | regexp \"POS terminal (?P<posid>POS\\\\d+)\" [1h]))",
+          "refId": "A",
+          "queryType": "range",
+          "legendFormat": "{{posid}}"
+        }
+      ],
+      "title": "Number of ERRORs by POSID (last hour)",
+      "type": "barchart"
+    },
+    {
+        "id": 200,
+        "type": "geomap",
+        "title": "POS Nodes Map",
+        "gridPos": { "h": 10, "w": 24, "x": 0, "y": 40 },
+        "datasource": { "type": "mimir", "uid": "Mimir" },
+        "targets": [
+            {
+            "expr": "sum by(location, latitude, longitude, brand, region, type) (increase(pos_transactions_total{latitude!='', longitude!=''}[5m]))",
+            "refId": "A",
+            "instant": true,
+            "format": "table"            
+            }
+        ],
+        "transformations": [
+            {
+            "id": "labelsToFields",
+            "options": {}
+            },
+            {
+            "id": "convertFieldType",
+            "options": {
+                "conversions": [
+                { "fieldName": "latitude", "type": "number" },
+                { "fieldName": "longitude", "type": "number" }
+                ]
+            }
+            },
+            {
+            "id": "groupBy",
+            "options": {
+                "fields": {
+                "latitude": "group-by",
+                "longitude": "group-by",
+                "location": "group-by",
+                "Value": "sum"
+                }
+            }
+            }
+        ],
+        "options": {
+            "view": {
+                "allLayers": true,
+                "id": "fit",
+                "lat": 0,
+                "lon": 0,
+                "zoom": 12
+            },
+            "maxZoom": 10,
+            "controls": {
+            "mouseWheelZoom": true,
+            "showAttribution": false,
+            "showDebug": false,
+            "showMeasure": false,
+            "showScale": false,
+            "showZoom": true
+            },
+            "layers": [
+            {
+                "type": "markers",
+                "name": "POS Nodes",
+                "location": {
+                    "mode": "coords",
+                    "latitude": "latitude",
+                    "longitude": "longitude"
+                },
+                "size": {
+                    "field": "Value",
+                    "mode": "field"
+                },
+                "color": { "mode": "fixed", "fixedColor": "red" },
+                "showLegend": true,
+                "values": [
+                { "field": "location" },
+                { "field": "brand" },
+                { "field": "region" }
+                ]
+            }
+            ],
+            "tooltip": {
+            "mode": "details"
+            }
+        },
+        "fieldConfig": {
+            "defaults": {
+            "custom": {
+                "hideFrom": {
+                "tooltip": false,
+                "viz": false,
+                "legend": false
+                }
+            },
+            "mappings": [],
+            "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                { "value": null, "color": "green" },
+                { "value": 80, "color": "red" }
+                ]
+            }
+            },
+            "overrides": []
+        },
+        "pluginVersion": "10.2.3"
+        }
   ],
   "refresh": "5s",
   "schemaVersion": 38,
@@ -237,6 +393,7 @@
         "query": "label_values(location)",
         "multi": true,
         "includeAll": true,
+        "allValue": ".*",
         "current": { "selected": false, "text": "All", "value": "$__all" }
       },
       {
