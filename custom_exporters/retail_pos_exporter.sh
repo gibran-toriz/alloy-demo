@@ -7,6 +7,8 @@ LOCATION=${LOCATION:-store-1}
 BRAND=${BRAND:-brand1}
 CURRENCY=${CURRENCY:-USD}
 PROBLEM_MODE=${PROBLEM_MODE:-healthy}
+LATITUDE=${LATITUDE:-0.0}
+LONGITUDE=${LONGITUDE:-0.0}
 
 # Determine store location based on port
 if [ "$PORT" = "9301" ]; then
@@ -64,47 +66,47 @@ while true; do
   RESPONSE=$(cat <<EOF
 # HELP pos_transactions_total Total number of transactions
 # TYPE pos_transactions_total counter
-pos_transactions_total{brand="$BRAND",region="$REGION",location="$LOCATION",status="success"} $TX_SUCCESS
-pos_transactions_total{brand="$BRAND",region="$REGION",location="$LOCATION",status="failed"} $TX_FAILED
+pos_transactions_total{brand="$BRAND",region="$REGION",location="$LOCATION",status="success",latitude="$LATITUDE",longitude="$LONGITUDE"} $TX_SUCCESS
+pos_transactions_total{brand="$BRAND",region="$REGION",location="$LOCATION",status="failed",latitude="$LATITUDE",longitude="$LONGITUDE"} $TX_FAILED
 # HELP pos_amount_total Total transaction amount
 # TYPE pos_amount_total counter
-pos_amount_total{brand="$BRAND",region="$REGION",location="$LOCATION",currency="$CURRENCY"} $AMOUNT_TOTAL
+pos_amount_total{brand="$BRAND",region="$REGION",location="$LOCATION",currency="$CURRENCY",latitude="$LATITUDE",longitude="$LONGITUDE"} $AMOUNT_TOTAL
 # HELP pos_inventory_items Number of items in inventory
 # TYPE pos_inventory_items gauge
-pos_inventory_items{brand="$BRAND",region="$REGION",location="$LOCATION",product="laptops"} $INV_LAPTOPS
-pos_inventory_items{brand="$BRAND",region="$REGION",location="$LOCATION",product="phones"} $INV_PHONES
+pos_inventory_items{brand="$BRAND",region="$REGION",location="$LOCATION",product="laptops",latitude="$LATITUDE",longitude="$LONGITUDE"} $INV_LAPTOPS
+pos_inventory_items{brand="$BRAND",region="$REGION",location="$LOCATION",product="phones",latitude="$LATITUDE",longitude="$LONGITUDE"} $INV_PHONES
 # HELP pos_system_uptime_seconds System uptime in seconds
 # TYPE pos_system_uptime_seconds counter
-pos_system_uptime_seconds{brand="$BRAND",region="$REGION",location="$LOCATION"} $(( ( $(date +%s) - 1609459200 ) + (RANDOM%86400) ))
+pos_system_uptime_seconds{brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $(( ( $(date +%s) - 1609459200 ) + (RANDOM%86400) ))
 # HELP pos_cpu_usage CPU usage percentage
 # TYPE pos_cpu_usage gauge
-pos_cpu_usage{brand="$BRAND",region="$REGION",location="$LOCATION",cpu="0"} $CPU_USAGE
+pos_cpu_usage{brand="$BRAND",region="$REGION",location="$LOCATION",cpu="0",latitude="$LATITUDE",longitude="$LONGITUDE"} $CPU_USAGE
 # HELP pos_memory_usage_bytes Memory usage in bytes
 # TYPE pos_memory_usage_bytes gauge
-pos_memory_usage_bytes{brand="$BRAND",region="$REGION",location="$LOCATION"} $MEM_USAGE
+pos_memory_usage_bytes{brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $MEM_USAGE
 # HELP pos_transaction_errors_total Number of failed transactions
 # TYPE pos_transaction_errors_total counter
-pos_transaction_errors_total{error_type="$TX_ERROR_TYPE",brand="$BRAND",region="$REGION",location="$LOCATION"} $TX_ERRORS
+pos_transaction_errors_total{error_type="$TX_ERROR_TYPE",brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $TX_ERRORS
 # HELP pos_payment_method_total Count by payment method
 # TYPE pos_payment_method_total counter
-pos_payment_method_total{method="cash",brand="$BRAND",region="$REGION",location="$LOCATION"} $PM_CASH
-pos_payment_method_total{method="credit_card",brand="$BRAND",region="$REGION",location="$LOCATION"} $PM_CC
-pos_payment_method_total{method="mobile",brand="$BRAND",region="$REGION",location="$LOCATION"} $PM_MOBILE
+pos_payment_method_total{method="cash",brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $PM_CASH
+pos_payment_method_total{method="credit_card",brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $PM_CC
+pos_payment_method_total{method="mobile",brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $PM_MOBILE
 # HELP pos_printer_status Printer health (1=ok, 0=error)
 # TYPE pos_printer_status gauge
-pos_printer_status{printer_id="printer-1",brand="$BRAND",region="$REGION",location="$LOCATION"} $PRINTER_STATUS
+pos_printer_status{printer_id="printer-1",brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $PRINTER_STATUS
 # HELP pos_scanner_status Scanner health (1=ok, 0=error)
 # TYPE pos_scanner_status gauge
-pos_scanner_status{scanner_id="scanner-1",brand="$BRAND",region="$REGION",location="$LOCATION"} $SCANNER_STATUS
+pos_scanner_status{scanner_id="scanner-1",brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $SCANNER_STATUS
 # HELP pos_failed_logins_total Failed login attempts
 # TYPE pos_failed_logins_total counter
-pos_failed_logins_total{brand="$BRAND",region="$REGION",location="$LOCATION",user="cashier1"} $FAILED_LOGINS
+pos_failed_logins_total{brand="$BRAND",region="$REGION",location="$LOCATION",user="cashier1",latitude="$LATITUDE",longitude="$LONGITUDE"} $FAILED_LOGINS
 # HELP pos_active_sessions Number of logged-in users
 # TYPE pos_active_sessions gauge
-pos_active_sessions{brand="$BRAND",region="$REGION",location="$LOCATION"} $ACTIVE_SESSIONS
+pos_active_sessions{brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $ACTIVE_SESSIONS
 # HELP pos_network_latency_seconds Network latency to central server
 # TYPE pos_network_latency_seconds gauge
-pos_network_latency_seconds{brand="$BRAND",region="$REGION",location="$LOCATION"} $NETWORK_LATENCY
+pos_network_latency_seconds{brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $NETWORK_LATENCY
 EOF
 )
   # Use -N flag to close connection after sending response

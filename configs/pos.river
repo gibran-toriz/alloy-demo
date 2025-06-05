@@ -14,6 +14,8 @@ prometheus.scrape "pos_exporter" {
     type = "pos",
     device = env("DEVICE"),
     problem = env("PROBLEM_MODE"),
+    latitude = env("LATITUDE"),
+    longitude = env("LONGITUDE"),
   }]
   forward_to = [prometheus.remote_write.prom.receiver]
 }
@@ -28,6 +30,8 @@ loki.write "loki" {
     region = env("REGION"),
     location = env("LOCATION"),
     type = "pos",
+    latitude = env("LATITUDE"),
+    longitude = env("LONGITUDE"),
   }
 }
 
