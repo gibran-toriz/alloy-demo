@@ -17,21 +17,42 @@ This document provides a comprehensive reference of all metrics exposed by the e
 
 **Ports:** 9300 (store-1), 9301 (store-2)
 
-| Metric Name | Type | Description | Labels |
-|-------------|------|-------------|---------|
-| `pos_transactions_total` | Counter | Total number of transactions | `brand`, `location`, `status` |
-| `pos_amount_total` | Counter | Total transaction amount | `brand`, `location`, `currency` |
-| `pos_inventory_items` | Gauge | Current inventory count | `brand`, `location`, `product` |
-| `pos_system_uptime_seconds` | Counter | System uptime in seconds | `brand`, `location` |
-| `pos_cpu_usage` | Gauge | CPU usage percentage | `brand`, `location`, `cpu` |
-| `pos_memory_usage_bytes` | Gauge | Memory usage in bytes | `brand`, `location` |
-| `pos_transaction_errors_total` | Counter | Number of failed transactions | `error_type`, `brand`, `region`, `location` |
-| `pos_payment_method_total` | Counter | Count by payment method | `method`, `brand`, `region`, `location` |
-| `pos_printer_status` | Gauge | Printer health (1=ok, 0=error) | `printer_id`, `brand`, `region`, `location` |
-| `pos_scanner_status` | Gauge | Scanner health (1=ok, 0=error) | `scanner_id`, `brand`, `region`, `location` |
-| `pos_failed_logins_total` | Counter | Failed login attempts | `brand`, `region`, `location`, `user` |
-| `pos_active_sessions` | Gauge | Number of logged-in users | `brand`, `region`, `location` |
-| `pos_network_latency_seconds` | Gauge | Network latency to central server | `brand`, `region`, `location` |
+This section documents the metrics exported by the simulated POS (Point-of-Sale) exporter used in the retail observability demo.
+
+### Core Metrics
+
+| Metric Name                         | Type   | Description                                  | Labels                                  |
+|------------------------------------|--------|----------------------------------------------|------------------------------------------|
+| pos_transactions_total             | Counter| Total number of transactions                 | location, brand, region                  |
+| pos_amount_total                   | Counter| Total sales amount in USD                    | location, brand, region                  |
+| pos_inventory_items                | Gauge  | Total items in inventory                     | location, brand, region                  |
+| pos_cpu_usage                      | Gauge  | CPU usage percentage                         | location, brand, region                  |
+| pos_memory_usage_bytes             | Gauge  | Memory usage in bytes                        | location, brand, region                  |
+| pos_network_latency_seconds        | Gauge  | Network latency to central server            | location, brand, region                  |
+| pos_failed_logins_total            | Counter| Failed login attempts                        | location, brand, region                  |
+| pos_transaction_errors_total       | Counter| Errors during transactions                   | location, brand, region, error_type      |
+| pos_payment_method_total           | Counter| Total transactions by payment method         | location, brand, region, method          |
+| pos_active_sessions                | Gauge  | Active user sessions                         | location, brand, region                  |
+| pos_printer_status                 | Gauge  | Status of printer device (1=OK, 0=Error)     | location, brand, region                  |
+| pos_scanner_status                 | Gauge  | Status of barcode scanner (1=OK, 0=Error)    | location, brand, region                  |
+
+### Hardware & Network Metrics
+
+| Metric Name                         | Type   | Description                                  | Labels                                  |
+|------------------------------------|--------|----------------------------------------------|------------------------------------------|
+| pos_disk_usage_percent             | Gauge  | Disk usage percentage                        | location, brand, region                  |
+| pos_cpu_temperature_celsius        | Gauge  | CPU temperature in Celsius                   | location, brand, region                  |
+| pos_uptime_seconds                 | Counter| POS uptime in seconds                        | location, brand, region                  |
+| pos_io_read_bytes_total            | Counter| Total read bytes from disk                   | location, brand, region                  |
+| pos_io_write_bytes_total           | Counter| Total write bytes to disk                    | location, brand, region                  |
+| pos_process_count                  | Gauge  | Number of running processes                  | location, brand, region                  |
+| pos_firmware_version_info          | Gauge  | Firmware version info (static with version)  | location, brand, region, version         |
+| pos_ping_latency_seconds           | Gauge  | Ping latency to HQ backend                   | location, brand, region, target          |
+| pos_packet_loss_percent            | Gauge  | Simulated packet loss percentage             | location, brand, region                  |
+| pos_dns_resolution_time_seconds    | Gauge  | DNS resolution time                          | location, brand, region                  |
+| pos_interface_up                   | Gauge  | Whether network interface is up (1/0)        | location, brand, region, interface       |
+| pos_problem_state                  | Gauge  | POS health status (0=OK, 1=Problem)          | location, brand, region                  |
+| pos_error_code_last                | Gauge  | Last simulated error code                    | location, brand, region                  |
 
 ## Network Device Exporter
 
