@@ -1,116 +1,120 @@
 #!/bin/bash
 
-# Get port from command line argument or use default
-PORT=${1:-9300}
-REGION=${REGION:-region1}
-LOCATION=${LOCATION:-store-1}
-BRAND=${BRAND:-brand1}
-CURRENCY=${CURRENCY:-USD}
-PROBLEM_MODE=${PROBLEM_MODE:-healthy}
-LATITUDE=${LATITUDE:-0.0}
-LONGITUDE=${LONGITUDE:-0.0}
-
-# Determine store location based on port
-if [ "$PORT" = "9301" ]; then
-    LOCATION=${LOCATION:-store-2}
-fi
-
-echo "Starting Retail POS Exporter for $LOCATION ($REGION) on port $PORT, mode: $PROBLEM_MODE"
+PORT=9300
+INTERVAL=1
+LOCATION=${LOCATION:-"store-1"}
+REGION=${REGION:-"us-east"}
+BRAND=${BRAND:-"AcmePOS"}
+HOSTNAME=$(hostname)
 
 while true; do
-  if [ "$PROBLEM_MODE" = "problem" ]; then
-    # Erratic metrics: high CPU, low inventory, more failed transactions
-    TX_SUCCESS=$((RANDOM%100 + 10))
-    TX_FAILED=$((RANDOM%50 + 20))
-    AMOUNT_TOTAL=$((RANDOM%1000 + 100))
-    INV_LAPTOPS=$((RANDOM%5))
-    INV_PHONES=$((RANDOM%10))
-    CPU_USAGE=$((80 + RANDOM%20))
-    MEM_USAGE=$(( (RANDOM%2000000) + 1000000 ))
-
-    # New metrics for problem mode
-    TX_ERROR_TYPE="timeout"
-    TX_ERRORS=$((RANDOM%20 + 5))
-    PAYMENT_METHODS=("cash" "credit_card" "mobile")
-    PM_CASH=$((RANDOM%20 + 5))
-    PM_CC=$((RANDOM%10 + 2))
-    PM_MOBILE=$((RANDOM%5 + 1))
-    PRINTER_STATUS=0
-    SCANNER_STATUS=0
-    FAILED_LOGINS=$((RANDOM%10 + 5))
-    ACTIVE_SESSIONS=$((RANDOM%2))
-    NETWORK_LATENCY=$(awk -v min=0.5 -v max=2.0 'BEGIN{srand(); print min+rand()*(max-min)}')
-  else
-    # Healthy metrics
-    TX_SUCCESS=$((RANDOM%1000 + 500))
-    TX_FAILED=$((RANDOM%5))
-    AMOUNT_TOTAL=$((RANDOM%10000 + 5000))
-    INV_LAPTOPS=$((RANDOM%100 + 50))
-    INV_PHONES=$((RANDOM%200 + 100))
-    CPU_USAGE=$((RANDOM%50))
-    MEM_USAGE=$(( (RANDOM%8000000) + 2000000 ))
-
-    # New metrics for healthy mode
-    TX_ERROR_TYPE="none"
-    TX_ERRORS=0
-    PAYMENT_METHODS=("cash" "credit_card" "mobile")
-    PM_CASH=$((RANDOM%100 + 50))
-    PM_CC=$((RANDOM%80 + 40))
-    PM_MOBILE=$((RANDOM%30 + 10))
-    PRINTER_STATUS=1
-    SCANNER_STATUS=1
-    FAILED_LOGINS=$((RANDOM%2))
-    ACTIVE_SESSIONS=$((RANDOM%5 + 1))
-    NETWORK_LATENCY=$(awk -v min=0.05 -v max=0.2 'BEGIN{srand(); print min+rand()*(max-min)}')
-  fi
-  RESPONSE=$(cat <<EOF
+  cat <<EOF > /tmp/metrics.txt
 # HELP pos_transactions_total Total number of transactions
 # TYPE pos_transactions_total counter
-pos_transactions_total{brand="$BRAND",region="$REGION",location="$LOCATION",status="success",latitude="$LATITUDE",longitude="$LONGITUDE"} $TX_SUCCESS
-pos_transactions_total{brand="$BRAND",region="$REGION",location="$LOCATION",status="failed",latitude="$LATITUDE",longitude="$LONGITUDE"} $TX_FAILED
-# HELP pos_amount_total Total transaction amount
+pos_transactions_total{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 10000 + 1000))
+
+# HELP pos_amount_total Total sales amount in USD
 # TYPE pos_amount_total counter
-pos_amount_total{brand="$BRAND",region="$REGION",location="$LOCATION",currency="$CURRENCY",latitude="$LATITUDE",longitude="$LONGITUDE"} $AMOUNT_TOTAL
-# HELP pos_inventory_items Number of items in inventory
+pos_amount_total{location="$LOCATION", brand="$BRAND", region="$REGION"} $(shuf -i 10000-100000 -n 1)
+
+# HELP pos_inventory_items Total items in inventory
 # TYPE pos_inventory_items gauge
-pos_inventory_items{brand="$BRAND",region="$REGION",location="$LOCATION",product="laptops",latitude="$LATITUDE",longitude="$LONGITUDE"} $INV_LAPTOPS
-pos_inventory_items{brand="$BRAND",region="$REGION",location="$LOCATION",product="phones",latitude="$LATITUDE",longitude="$LONGITUDE"} $INV_PHONES
-# HELP pos_system_uptime_seconds System uptime in seconds
-# TYPE pos_system_uptime_seconds counter
-pos_system_uptime_seconds{brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $(( ( $(date +%s) - 1609459200 ) + (RANDOM%86400) ))
+pos_inventory_items{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 1000 + 100))
+
 # HELP pos_cpu_usage CPU usage percentage
 # TYPE pos_cpu_usage gauge
-pos_cpu_usage{brand="$BRAND",region="$REGION",location="$LOCATION",cpu="0",latitude="$LATITUDE",longitude="$LONGITUDE"} $CPU_USAGE
+pos_cpu_usage{location="$LOCATION", brand="$BRAND", region="$REGION"} $(shuf -i 10-95 -n 1)
+
 # HELP pos_memory_usage_bytes Memory usage in bytes
 # TYPE pos_memory_usage_bytes gauge
-pos_memory_usage_bytes{brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $MEM_USAGE
-# HELP pos_transaction_errors_total Number of failed transactions
-# TYPE pos_transaction_errors_total counter
-pos_transaction_errors_total{error_type="$TX_ERROR_TYPE",brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $TX_ERRORS
-# HELP pos_payment_method_total Count by payment method
-# TYPE pos_payment_method_total counter
-pos_payment_method_total{method="cash",brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $PM_CASH
-pos_payment_method_total{method="credit_card",brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $PM_CC
-pos_payment_method_total{method="mobile",brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $PM_MOBILE
-# HELP pos_printer_status Printer health (1=ok, 0=error)
-# TYPE pos_printer_status gauge
-pos_printer_status{printer_id="printer-1",brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $PRINTER_STATUS
-# HELP pos_scanner_status Scanner health (1=ok, 0=error)
-# TYPE pos_scanner_status gauge
-pos_scanner_status{scanner_id="scanner-1",brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $SCANNER_STATUS
+pos_memory_usage_bytes{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 2000000000 + 500000000))
+
+# HELP pos_network_latency_seconds Network latency in seconds
+# TYPE pos_network_latency_seconds gauge
+pos_network_latency_seconds{location="$LOCATION", brand="$BRAND", region="$REGION"} 0.$((RANDOM % 200))
+
 # HELP pos_failed_logins_total Failed login attempts
 # TYPE pos_failed_logins_total counter
-pos_failed_logins_total{brand="$BRAND",region="$REGION",location="$LOCATION",user="cashier1",latitude="$LATITUDE",longitude="$LONGITUDE"} $FAILED_LOGINS
-# HELP pos_active_sessions Number of logged-in users
+pos_failed_logins_total{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 20))
+
+# HELP pos_transaction_errors_total Errors during transactions
+# TYPE pos_transaction_errors_total counter
+pos_transaction_errors_total{location="$LOCATION", brand="$BRAND", region="$REGION", error_type="timeout"} $((RANDOM % 10))
+
+# HELP pos_payment_method_total Total transactions by payment method
+# TYPE pos_payment_method_total counter
+pos_payment_method_total{location="$LOCATION", brand="$BRAND", region="$REGION", method="cash"} $((RANDOM % 100))
+pos_payment_method_total{location="$LOCATION", brand="$BRAND", region="$REGION", method="card"} $((RANDOM % 100))
+pos_payment_method_total{location="$LOCATION", brand="$BRAND", region="$REGION", method="mobile"} $((RANDOM % 50))
+
+# HELP pos_active_sessions Active user sessions
 # TYPE pos_active_sessions gauge
-pos_active_sessions{brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $ACTIVE_SESSIONS
-# HELP pos_network_latency_seconds Network latency to central server
-# TYPE pos_network_latency_seconds gauge
-pos_network_latency_seconds{brand="$BRAND",region="$REGION",location="$LOCATION",latitude="$LATITUDE",longitude="$LONGITUDE"} $NETWORK_LATENCY
+pos_active_sessions{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 10))
+
+# HELP pos_printer_status Status of printer device (1=OK, 0=Error)
+# TYPE pos_printer_status gauge
+pos_printer_status{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 2))
+
+# HELP pos_scanner_status Status of barcode scanner (1=OK, 0=Error)
+# TYPE pos_scanner_status gauge
+pos_scanner_status{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 2))
+
+# === New hardware/network metrics ===
+
+# HELP pos_disk_usage_percent Disk usage percentage
+# TYPE pos_disk_usage_percent gauge
+pos_disk_usage_percent{location="$LOCATION", brand="$BRAND", region="$REGION"} $(shuf -i 50-95 -n 1)
+
+# HELP pos_cpu_temperature_celsius CPU temperature
+# TYPE pos_cpu_temperature_celsius gauge
+pos_cpu_temperature_celsius{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 20 + 50))
+
+# HELP pos_uptime_seconds POS uptime in seconds
+# TYPE pos_uptime_seconds counter
+pos_uptime_seconds{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 86400))
+
+# HELP pos_io_read_bytes_total Total read bytes from disk
+# TYPE pos_io_read_bytes_total counter
+pos_io_read_bytes_total{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 50000000))
+
+# HELP pos_io_write_bytes_total Total write bytes to disk
+# TYPE pos_io_write_bytes_total counter
+pos_io_write_bytes_total{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 70000000))
+
+# HELP pos_process_count Number of running processes
+# TYPE pos_process_count gauge
+pos_process_count{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 200 + 50))
+
+# HELP pos_firmware_version_info Firmware version info (static label)
+# TYPE pos_firmware_version_info gauge
+pos_firmware_version_info{location="$LOCATION", brand="$BRAND", region="$REGION", version="v1.3.2"} 1
+
+# HELP pos_ping_latency_seconds Ping latency to HQ backend
+# TYPE pos_ping_latency_seconds gauge
+pos_ping_latency_seconds{location="$LOCATION", brand="$BRAND", region="$REGION", target="hq.backend"} 0.$((RANDOM % 300))
+
+# HELP pos_packet_loss_percent Simulated packet loss %
+# TYPE pos_packet_loss_percent gauge
+pos_packet_loss_percent{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 5))
+
+# HELP pos_dns_resolution_time_seconds DNS resolution time
+# TYPE pos_dns_resolution_time_seconds gauge
+pos_dns_resolution_time_seconds{location="$LOCATION", brand="$BRAND", region="$REGION"} 0.$((RANDOM % 300))
+
+# HELP pos_interface_up Whether network interface is up (1) or down (0)
+# TYPE pos_interface_up gauge
+pos_interface_up{location="$LOCATION", brand="$BRAND", region="$REGION", interface="eth0"} 1
+
+# HELP pos_problem_state POS health status (0=OK, 1=Problem)
+# TYPE pos_problem_state gauge
+pos_problem_state{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 2))
+
+# HELP pos_error_code_last Last error code (simulated)
+# TYPE pos_error_code_last gauge
+pos_error_code_last{location="$LOCATION", brand="$BRAND", region="$REGION"} $((RANDOM % 10))
 EOF
-)
-  # Use -N flag to close connection after sending response
-  echo -e "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n$RESPONSE" | nc -l -N -p "$PORT"
-  # Small delay to prevent high CPU usage
-  sleep 0.1
+
+  # Serve metrics
+  { echo -ne "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"; cat /tmp/metrics.txt; } | nc -l -p $PORT -q 1
+  sleep $INTERVAL
 done

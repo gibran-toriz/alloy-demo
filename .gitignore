@@ -1,4 +1,3 @@
 ## Gitignore file for Alloy demo
-
 data-alloy
-
+.DS_Store
