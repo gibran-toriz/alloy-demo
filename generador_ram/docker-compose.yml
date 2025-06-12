@@ -1,0 +1,7 @@
+version: '3.8'
+
+services:
+  ram_generator:
+    build:
+      context: .
+    container_name: ram_simulator

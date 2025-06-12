@@ -60,6 +60,42 @@ services:
       - loki
       - mimir
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    networks:
+      - alloy_net
+    ports:
+      - "5672:5672"     # puerto de mensajería
+      - "15672:15672"   # UI web de administración
+    restart: unless-stopped
+
+  fastapi_app:
+    build:
+      context: ./connect
+    container_name: fastapi_app
+    networks:
+      - alloy_net
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  iw-robot:
+    image: iw-robot-1.2.0:latest
+    platform: linux/amd64
+    container_name: iw-robot
+    ports:
+      - "5901:5900"  # Puerto VNC
+      - "8050:8050"  # Puerto iw-robot
+      - "4050:4050"  # Puerto iw-robot seguro
+    restart: always
+    privileged: true
+    volumes:
+      - /Users/gibrantoriz/CascadeProjects/demo-monitoring-prometheus/iwRobot/iw-robot:/root/Documents/iw-robot
+      - /var/run/docker.sock:/var/run/docker.sock  # ⬅️ Habilita control de Docker
+    networks:
+      - alloy_net
+  
   # Plantilla para nodos (no se inicia por defecto)
   node_template:
     build:
