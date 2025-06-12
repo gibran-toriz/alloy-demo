@@ -23,11 +23,10 @@ EOF
 case "$NODE_TYPE" in
   server)
     cat >> $SUPERVISOR_CONF <<EOF
-[program:server_exporter]
-command=/bin/bash /opt/custom_exporters/server_exporter.sh 9600
+[program:node_exporter]
+command=/usr/bin/prometheus-node-exporter --web.listen-address=:9600
 autorestart=true
 user=root
-environment=NODE_TYPE=${NODE_TYPE},REGION=${REGION:-region1},LOCATION=${LOCATION:-datacenter1},BRAND=${BRAND:-retail},PROBLEM_MODE=${PROBLEM_MODE:-healthy}
 EOF
     ;;
   pos)

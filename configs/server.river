@@ -8,17 +8,17 @@ logging {
 prometheus.scrape "node_exporter" {
   targets = [{
     __address__ = "localhost:9600",
-    brand = env("BRAND"),
-    region = env("REGION"),
-    location = env("LOCATION"),
-    type = "server",
-    problem = env("PROBLEM_MODE"),
+    instance = env("LOCATION") + "-" + env("REGION"),
+    nodename = env("NODE_NAME"),
+    brand       = env("BRAND"),
+    region      = env("REGION"),
+    location    = env("LOCATION"),
+    type        = "server",
+    problem     = env("PROBLEM_MODE"),
   }]
   forward_to = [prometheus.remote_write.prom.receiver]
-  
-  // Scrape configuration
   scrape_interval = "15s"
-  scrape_timeout = "10s"
+  scrape_timeout  = "10s"
 }
 
 // Loki configuration for logs
