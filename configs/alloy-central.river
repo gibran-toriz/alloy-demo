@@ -1,0 +1,24 @@
+// Logging configuration
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// Connections Exporter Configuration
+prometheus.scrape "connections_exporter" {
+  targets = [{
+    __address__ = "connections_exporter:9701",
+  }]
+  forward_to = [prometheus.remote_write.prom.receiver]
+}
+
+
+// Remote Write Configuration
+prometheus.remote_write "prom" {
+  endpoint {
+    url = "http://mimir:9009/api/v1/push"
+    headers = {
+      "X-Scope-OrgID" = "demo",
+    }
+  }
+}

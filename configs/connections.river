@@ -1,0 +1,29 @@
+// Logging
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+http {
+  listen_address = "0.0.0.0:12345"
+}
+
+// Scrape connections exporter
+prometheus.scrape "connections" {
+  targets = [{
+    __address__ = "localhost:9701",
+  }]
+  forward_to = [prometheus.remote_write.prom.receiver]
+  scrape_interval = "15s"
+  scrape_timeout  = "10s"
+}
+
+// Remote write to Mimir
+prometheus.remote_write "prom" {
+  endpoint {
+    url = "http://mimir:9009/api/v1/push"
+    headers = {
+      "X-Scope-OrgID" = "demo",
+    }
+  }
+}

@@ -95,7 +95,30 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock  # ⬅️ Habilita control de Docker
     networks:
       - alloy_net
+    
+  connections_exporter:
+    build:
+      context: ./custom_exporters/connections_exporter
+    container_name: connections_exporter
+    ports:
+      - "9701:9701"
+      - "12745:12345"
+    networks:
+      - alloy_net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
   
+  alloy-central:
+    image: grafana/alloy:latest
+    container_name: alloy_central
+    networks:
+      - alloy_net
+    volumes:
+      - ./configs/alloy-central.river:/etc/alloy/config.river
+    command: ["run", "/etc/alloy/config.river"]
+    restart: unless-stopped
+
   # Plantilla para nodos (no se inicia por defecto)
   node_template:
     build:
