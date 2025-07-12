@@ -5,3 +5,6 @@ services:
     build:
       context: .
     container_name: ram_simulator
+    mem_limit: 18g
+    oom_kill_disable: true  # Disable OOM killer
+    privileged: true

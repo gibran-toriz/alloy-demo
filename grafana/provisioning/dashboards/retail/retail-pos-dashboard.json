@@ -1590,8 +1590,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "POS Observability Dashboard-v3",
-  "uid": "retail-pos-dashboard-v3",
+  "title": "POS Observability Dashboard",
+  "uid": "retail-pos-dashboard",
   "version": 10,
   "weekStart": ""
 }

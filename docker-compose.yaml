@@ -8,6 +8,7 @@ networks:
 # Volúmenes
 volumes:
   grafana-storage:
+  rabbitmq_data:
 
 # Servicios centrales
 services:
@@ -51,6 +52,7 @@ services:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/provisioning/alerting:/etc/grafana/provisioning/alerting
       - grafana-storage:/var/lib/grafana
       - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
     networks:
@@ -66,8 +68,15 @@ services:
     networks:
       - alloy_net
     ports:
-      - "5672:5672"     # puerto de mensajería
-      - "15672:15672"   # UI web de administración
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./rabbitmq-definitions.json:/etc/rabbitmq/definitions.json:ro
+      - rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
     restart: unless-stopped
 
   fastapi_app:

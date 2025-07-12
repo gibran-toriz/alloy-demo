@@ -5,9 +5,10 @@ policies:
       group_by:
         - grafana_folder
         - alertname
+      repeat_interval: 2m
       routes:
         - receiver: iwRobot
           object_matchers:
             - - alert
               - =
-              - iwRobot
+              - iwrobot

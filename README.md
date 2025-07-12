@@ -110,3 +110,9 @@ If you want to remove volumes to clear stored Mimir/Loki data, you can use:
 ```bash
 docker-compose down -v
 ```
+
+
+## Alerting and Notifications
+```json
+{"alert": "RAM - Alert"}
+```

@@ -1,0 +1,12 @@
+apiVersion: 1
+contactPoints:
+    - orgId: 1
+      name: iwRobot
+      receivers:
+        - uid: eb432aeb-2ddc-43f0-8577-3b8f9578a080
+          type: webhook
+          settings:
+            httpMethod: POST
+            password: admin
+            url: http://fastapi_app:8000/webhook
+          disableResolveMessage: false
