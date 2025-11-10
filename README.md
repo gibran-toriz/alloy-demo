@@ -1,118 +1,154 @@
-# Grafana Alloy Observability POC
+# Grafana Alloy Observability Stack - POC
 
-This project is a Proof of Concept (POC) demonstrating an observability stack using Grafana Alloy, Mimir, Loki, and custom exporters, all orchestrated with Docker Compose.
+A comprehensive Proof of Concept (POC) demonstrating a distributed observability stack using Grafana Alloy, Mimir, Loki, and dynamic node creation, orchestrated with Docker Compose.
 
-## Overview
+## 🎯 Overview
 
-The stack includes:
-- **Grafana Alloy**: Collects metrics and logs.
-- **Mimir**: Stores metrics (Prometheus-compatible).
-- **Loki**: Stores logs.
-- **Grafana**: Visualizes data from Mimir and Loki.
-- **Node Exporter**: Exposes system metrics.
-- **Custom Exporter**: A shell script (`custom_exporter.sh`) exposing a custom temperature metric.
+This POC simulates a distributed retail infrastructure with dynamic point-of-sale (POS) systems and servers, providing real-time observability through metrics and logs aggregation.
 
-## Prerequisites
+### Key Components
 
-- Docker
-- Docker Compose
+**Observability Stack:**
+- **Grafana Alloy**: Telemetry collection agent
+- **Mimir**: Time-series metrics storage (Prometheus-compatible)
+- **Loki**: Log aggregation and storage
+- **Grafana**: Unified visualization dashboard
 
-## Directory Structure
+**Infrastructure Services:**
+- **RabbitMQ**: Message broker for event streaming
+- **FastAPI**: REST API for network connectivity data
+- **iw-Robot**: Process automation framework
+- **Custom Exporters**: Network connections and custom metrics
 
-```
-.alloy-server-example/
-├── Dockerfile                # Builds the main 'alloy-lab' service image
-├── docker-compose.yaml       # Orchestrates all services
-├── config.river              # Grafana Alloy pipeline configuration
-├── supervisord.conf          # Manages processes within the 'alloy-lab' container
-├── custom_exporters/
-│   └── custom_exporter.sh    # Script for custom metrics
-├── hostlogs/
-│   └── app.log               # Example log file collected by Alloy (must exist)
-├── mimir-config.yaml         # Mimir configuration
-└── README.md                 # This file
-```
+**Dynamic Nodes:**
+- **POS Nodes**: Retail point-of-sale systems with transaction metrics
+- **Server Nodes**: Backend servers with system metrics
+- Geographic distribution simulation (configurable radius from center point)
 
-## Configuration Notes
+## 🚀 Quick Start
 
-- **Alloy Pipeline (`config.river`)**: Defines how metrics and logs are collected and forwarded.
-  - Metrics from Node Exporter and the Custom Exporter are sent to Mimir.
-  - Logs from `/var/log/hostlogs/app.log` (mounted from `./hostlogs/app.log` on the host) are sent to Loki.
-- **Log Collection**: Currently, `loki.source.file` in `config.river` is configured to specifically target `app.log` due to an issue with wildcard matching (`*.log`) on this setup. If you need to collect from multiple log files or use wildcards, further investigation into Alloy's file discovery with Docker volumes on your OS might be needed.
+For detailed setup instructions, please refer to **[SETUP_GUIDE.md](SETUP_GUIDE.md)**.
 
-## How to Run
+### Basic Usage
 
-1.  **Clone the Repository** (if applicable) or ensure you have all project files.
-
-2.  **Prepare Log File**: Create the log directory and an initial log file if it doesn't exist. Alloy expects `/var/log/hostlogs/app.log` inside its container, which is mapped from `./hostlogs/app.log` on your host.
-    ```bash
-    mkdir -p hostlogs
-    touch hostlogs/app.log
-    echo "$(date) - Initial log entry for POC startup" >> hostlogs/app.log
-    ```
-
-3.  **Build and Start Services**: From the project's root directory, run:
-    ```bash
-    docker-compose up -d --build
-    ```
-    This will build the `alloy-lab` image and start all services in detached mode.
-
-## Accessing Services & Verifying Data
-
--   **Grafana**: `http://localhost:3000`
-    -   Credentials: `admin` / `admin` (you'll be prompted to change the password on first login).
-    -   **Mimir Data (Metrics)**:
-        -   Navigate to Explore (compass icon).
-        -   Select the "Mimir" data source.
-        -   Query for `custom_temperature` to see the custom metric.
-        -   Query for `up{job="prometheus.scrape.custom_exporter"}` (should be `1`).
-        -   Query for `up{job="prometheus.scrape.node_exporter"}` (should be `1`).
-    -   **Loki Data (Logs)**:
-        -   Navigate to Explore.
-        -   Select the "Loki" data source.
-        -   Query for `{job="example_logs"}` or `{filename="/var/log/hostlogs/app.log"}`.
-
--   **Node Exporter Metrics**: `http://localhost:9100/metrics` (directly from the exporter)
--   **Custom Exporter Metrics**: `http://localhost:9200/metrics` (directly from the exporter)
-
-## Troubleshooting
-
--   **Alloy Logs**: To see Grafana Alloy's own logs (including debug information if `logging { level = "debug" ... }` is set in `config.river`):
-    ```bash
-    docker exec alloy-lab cat /tmp/alloy_stderr.log
-    # or for stdout, though most debug info went to stderr in our case:
-    # docker exec alloy-lab cat /tmp/alloy_stdout.log
-    ```
-    (These paths are defined in `supervisord.conf` for the `alloy` program).
-
--   **Other Container Logs**:
-    ```bash
-    docker logs <container_name>
-    # Examples:
-    # docker logs alloy-lab
-    # docker logs loki
-    # docker logs mimir
-    # docker logs grafana
-    ```
-
--   **Custom Exporter Not Working**: Ensure `nc` (netcat) is available in the `alloy-lab` container (it's installed via `Dockerfile`). Check `custom_exporter.sh` for issues.
-
--   **Log Collection Issues**: As noted, if `app.log` isn't being picked up, verify the path in `config.river` (`loki.source.file`) and ensure the `./hostlogs/app.log` file exists on the host before starting containers.
-
-## Stopping the POC
-
-To stop and remove all containers, networks, and volumes created by Docker Compose:
 ```bash
-docker-compose down
+# 1. Start the base stack
+./run_demo.sh
+
+# 2. Create dynamic nodes (e.g., 3 POS + 2 Servers)
+echo -e "3\n2" | ./create_nodes.sh
+
+# 3. Access Grafana
+# Open http://localhost:3000 (admin/admin)
 ```
 
-If you want to remove volumes to clear stored Mimir/Loki data, you can use:
-```bash
-docker-compose down -v
+## 📊 Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         Grafana UI                          │
+│                    (Visualization Layer)                    │
+└────────────────┬───────────────────────┬────────────────────┘
+                 │                       │
+        ┌────────▼────────┐     ┌───────▼────────┐
+        │      Mimir      │     │      Loki      │
+        │   (Metrics DB)  │     │    (Logs DB)   │
+        └────────▲────────┘     └───────▲────────┘
+                 │                       │
+        ┌────────┴───────────────────────┴────────┐
+        │          Grafana Alloy Central          │
+        │        (Telemetry Collection)           │
+        └────────▲───────────────────────▲────────┘
+                 │                       │
+     ┌───────────┴───────────┬───────────┴──────────┐
+     │                       │                      │
+┌────▼─────┐         ┌──────▼──────┐        ┌─────▼─────┐
+│POS Nodes │         │   Servers   │        │ Exporters │
+│ (Dynamic)│         │  (Dynamic)  │        │  (Static) │
+└──────────┘         └─────────────┘        └───────────┘
 ```
 
+## 🏗️ Project Structure
 
-## Alerting and Notifications
-```json
-{"alert": "RAM - Alert"}
 ```
+alloy-demo/
+├── configs/                  # Alloy configuration files per node type
+│   ├── alloy-central.river  # Central Alloy collector config
+│   ├── pos.river            # POS node configuration
+│   ├── server.river         # Server node configuration
+│   └── router.river         # Router node configuration
+├── custom_exporters/        # Custom metrics exporters
+├── grafana/                 # Grafana dashboards and datasources
+│   └── provisioning/
+│       ├── dashboards/      # Pre-configured dashboards
+│       ├── datasources/     # Mimir and Loki datasources
+│       └── alerting/        # Alert rules and contact points
+├── docker-compose.yaml      # Main services orchestration
+├── Dockerfile               # Node image build definition
+├── run_demo.sh             # POC initialization script
+├── create_nodes.sh         # Dynamic node creation script
+├── mimir-config.yaml       # Mimir configuration
+└── SETUP_GUIDE.md          # Detailed setup instructions
+```
+
+## 🎨 Features
+
+- **Dynamic Node Creation**: Spawn POS and Server nodes on-demand with unique configurations
+- **Geographic Simulation**: Nodes are assigned random coordinates within a configurable radius
+- **Auto-scaling Metrics**: Each node exports custom metrics (transactions, inventory, CPU, memory)
+- **Log Aggregation**: Centralized log collection from all nodes
+- **Pre-configured Dashboards**: Ready-to-use Grafana dashboards for infrastructure monitoring
+- **Alerting**: Built-in alert rules with webhook notifications
+- **Network Topology**: Simulated network devices (routers, switches)
+
+## 📈 Metrics & Monitoring
+
+Each POS node exposes:
+- `pos_transactions_total`: Total transaction count
+- `pos_amount_total`: Total sales amount
+- `pos_inventory_items`: Current inventory levels
+- `pos_cpu_usage`: CPU utilization
+- `pos_memory_usage_bytes`: Memory consumption
+
+Server nodes provide standard system metrics via built-in exporters.
+
+## 🔗 Key Endpoints
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Grafana | http://localhost:3000 | Main dashboard |
+| Loki | http://localhost:3100 | Log queries |
+| Mimir | http://localhost:9009 | Metrics ingestion |
+| RabbitMQ | http://localhost:15672 | Message queue UI |
+| FastAPI | http://localhost:8000/docs | API documentation |
+
+## 📚 Documentation
+
+- **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Complete setup and usage guide
+- **[METRICS_REFERENCE.md](METRICS_REFERENCE.md)** - Metrics catalog (if available)
+- **[ALLOY_DEMO_OPERATIONS.md](ALLOY_DEMO_OPERATIONS.md)** - Operations guide
+
+## 🛠️ Requirements
+
+- Docker 20.10+
+- Docker Compose 2.0+
+- Python 3.x
+- Bash 4.0+
+- 4GB+ available RAM
+- 10GB+ disk space
+
+## 🤝 Contributing
+
+This is a proof of concept for demonstration purposes. Feel free to fork and adapt for your use case.
+
+## 📝 License
+
+See [LICENSE](LICENSE) file for details.
+
+## 🐛 Troubleshooting
+
+For troubleshooting steps and common issues, please refer to the **Troubleshooting** section in [SETUP_GUIDE.md](SETUP_GUIDE.md).
+
+---
+
+**Note**: This POC is designed for demonstration and testing purposes. Do not use in production environments without proper security hardening and configuration review.
