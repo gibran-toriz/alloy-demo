@@ -36,7 +36,7 @@ For detailed setup instructions, please refer to **[SETUP_GUIDE.md](SETUP_GUIDE.
 ./run_demo.sh
 
 # 2. Create dynamic nodes (e.g., 3 POS + 2 Servers)
-echo -e "3\n2" | ./create_nodes.sh
+echo -e "3\n2" | ./scripts/create_nodes.sh
 
 # 3. Access Grafana
 # Open http://localhost:3000 (admin/admin)
@@ -77,6 +77,19 @@ alloy-demo/
 │   ├── pos.river            # POS node configuration
 │   ├── server.river         # Server node configuration
 │   └── router.river         # Router node configuration
+├── config/                  # Application configuration files
+│   ├── mimir-config.yaml    # Mimir configuration
+│   ├── rabbitmq.conf        # RabbitMQ configuration
+│   ├── rabbitmq-definitions.json
+│   └── supervisord.conf     # Supervisor configuration
+├── scripts/                 # Utility scripts
+│   ├── create_nodes.sh      # Dynamic node creation script
+│   ├── destroy_demo.sh      # Complete cleanup script
+│   ├── generate_pos_logs.py # Log generation
+│   └── entrypoint.sh        # Docker entrypoint
+├── docs/                    # Documentation
+│   ├── METRICS_REFERENCE.md
+│   └── NOTES.md
 ├── custom_exporters/        # Custom metrics exporters
 ├── grafana/                 # Grafana dashboards and datasources
 │   └── provisioning/
@@ -137,7 +150,22 @@ Server nodes provide standard system metrics via built-in exporters.
 - 4GB+ available RAM
 - 10GB+ disk space
 
-## 🤝 Contributing
+## � Cleanup
+
+To completely remove all POC components and free up resources:
+
+```bash
+./scripts/destroy_demo.sh
+```
+
+This will remove:
+- All dynamic nodes (POS, Server, Switch, Router)
+- All docker-compose services and volumes
+- Temporary log files
+- Background processes
+- Docker network
+
+## �🤝 Contributing
 
 This is a proof of concept for demonstration purposes. Feel free to fork and adapt for your use case.
 

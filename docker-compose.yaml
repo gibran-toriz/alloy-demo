@@ -34,7 +34,7 @@ services:
       - -target=all
       - -config.file=/etc/mimir/config.yaml
     volumes:
-      - ./mimir-config.yaml:/etc/mimir/config.yaml
+      - ./config/mimir-config.yaml:/etc/mimir/config.yaml
     networks:
       - alloy_net
     restart: unless-stopped
@@ -71,8 +71,8 @@ services:
       - "5672:5672"
       - "15672:15672"
     volumes:
-      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
-      - ./rabbitmq-definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./config/rabbitmq-definitions.json:/etc/rabbitmq/definitions.json:ro
       - rabbitmq_data:/var/lib/rabbitmq
     environment:
       - RABBITMQ_DEFAULT_USER=guest

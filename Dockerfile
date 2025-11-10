@@ -22,13 +22,11 @@ RUN mkdir -p /etc/alloy /var/log/hostlogs /opt/custom_exporters /data-alloy /etc
 ARG NODE_TYPE=pos
 COPY configs/${NODE_TYPE}.river /etc/alloy/config.river
 
-# Copia los scripts de exportadores
+# Copy custom exporters and entrypoint
 COPY custom_exporters/*.sh /opt/custom_exporters/
+COPY scripts/entrypoint.sh /opt/entrypoint.sh
 
-# Copia el script de entrypoint
-COPY entrypoint.sh /opt/entrypoint.sh
-
-# Da permisos a los scripts
+# Make scripts executable
 RUN chmod +x /opt/custom_exporters/*.sh /opt/entrypoint.sh
 
 # Set the entrypoint

@@ -174,7 +174,7 @@ docker-compose restart <service_name>
 ## 📝 Notes
 
 - POS logs are automatically generated in `/tmp/pos-logs/`
-- Use `create_nodes.sh` to create dynamic nodes (POS, Servers, etc.)
+- Use `scripts/create_nodes.sh` to create dynamic nodes (POS, Servers, etc.)
 - The script automatically cleans up previous containers before starting
 
 ## 🔍 Status Verification
@@ -201,10 +201,35 @@ lsof -i :<port>
 ```
 
 ### Clean everything and start from scratch:
+
+**Option 1: Using the cleanup script (recommended)**
 ```bash
-docker-compose down -v  # Also removes volumes
+./scripts/destroy_demo.sh
 ./run_demo.sh
 ```
+
+**Option 2: Manual cleanup**
+```bash
+# Remove all dynamic nodes first
+docker ps -a --filter "ancestor=alloy-demo-node:pos" \
+           --filter "ancestor=alloy-demo-node:server" \
+           --filter "ancestor=alloy-demo-node:switch" \
+           --filter "ancestor=alloy-demo-node:router" -q | xargs -r docker rm -f
+
+# Then stop and remove base services with volumes
+docker-compose down -v
+
+# Start fresh
+./run_demo.sh
+```
+
+The `destroy_demo.sh` script performs a complete cleanup:
+- Removes all dynamic nodes (POS, Server, Switch, Router)
+- Stops and removes all docker-compose services
+- Removes all volumes
+- Cleans up temporary log files
+- Stops background processes (log generators)
+- Removes Docker network
 
 ### iw-Robot container fails to start:
 ```bash
@@ -230,7 +255,7 @@ After starting the base stack, you can create dynamic nodes (POS and Servers) to
 ### Run the node creation script
 
 ```bash
-./create_nodes.sh
+./scripts/create_nodes.sh
 ```
 
 The script will ask for:
@@ -240,14 +265,14 @@ The script will ask for:
 #### Example: Create 3 POS and 2 Servers
 
 ```bash
-./create_nodes.sh
+./scripts/create_nodes.sh
 # Enter: 3
 # Enter: 2
 ```
 
 Or run automatically:
 ```bash
-echo -e "3\n2" | ./create_nodes.sh
+echo -e "3\n2" | ./scripts/create_nodes.sh
 ```
 
 ### ✨ Created Node Features
@@ -310,6 +335,12 @@ docker ps -a --filter "name=pos" -q | xargs docker rm -f
 
 # Stop and remove all Server nodes
 docker ps -a --filter "name=server" -q | xargs docker rm -f
+
+# OR remove all dynamic nodes at once (POS, Server, Switch, Router)
+docker ps -a --filter "ancestor=alloy-demo-node:pos" \
+           --filter "ancestor=alloy-demo-node:server" \
+           --filter "ancestor=alloy-demo-node:switch" \
+           --filter "ancestor=alloy-demo-node:router" -q | xargs -r docker rm -f
 ```
 
 ## 🤖 iw-Robot Workflow Details
@@ -346,7 +377,7 @@ iw-Robot connects to RabbitMQ at:
 1. ⚠️ **Setup iw-Robot** (see [iw-Robot Setup](#-iw-robot-setup-required))
 2. ✅ Start the base stack with `./run_demo.sh`
 3. 🤖 Import `Observabilidad.edn` workflow into iw-Robot
-4. ✅ Create dynamic nodes with `./create_nodes.sh`
+4. ✅ Create dynamic nodes with `./scripts/create_nodes.sh`
 5. 🎨 Access Grafana at http://localhost:3000
 6. 📊 Explore the pre-configured dashboards
 7. 📈 Review metrics from created nodes
