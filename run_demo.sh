@@ -1,5 +1,5 @@
 # Go to the directory where the script is located
-cd /Users/gibrantoriz/CascadeProjects/alloy-demo
+cd "$(dirname "$0")"
 
 # Stop all running containers and remove them
 docker-compose down

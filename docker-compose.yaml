@@ -100,7 +100,7 @@ services:
     restart: always
     privileged: true
     volumes:
-      - /Users/gibrantoriz/CascadeProjects/demo-monitoring-prometheus/iwRobot/iw-robot:/root/Documents/iw-robot
+      - ./iwRobot/iw-robot:/root/Documents/iw-robot
       - /var/run/docker.sock:/var/run/docker.sock  # ⬅️ Habilita control de Docker
     networks:
       - alloy_net

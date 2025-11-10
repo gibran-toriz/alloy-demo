@@ -3,5 +3,9 @@ data-alloy
 .DS_Store
 **/vnv/**
 **.log
-iwRobot/
 nohup.out
+
+# iw-Robot - Ignore the application folder and tar, but keep resources and workflow
+iwRobot/iw-robot/
+iwRobot/*.tar
+iwRobot/iw-robot-*/

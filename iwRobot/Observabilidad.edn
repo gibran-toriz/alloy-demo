@@ -1,0 +1,60 @@
+{:app-params {},
+ :instances {"monitor" {:start "resources/private/startRAM.sh"}},
+ :init-state :start,
+ :states
+ {:count_messages
+  {:operation :rabbitmq-count,
+   :conf
+   {:conexion
+    "{\"host\": \"rabbitmq\", \"port\": 5672, \"username\": \"guest\", \"password\": \"guest\", \"vhost\": \"/\"}",
+    :queue_name "alertas"},
+   :diagram {:corner [351.0103759765625 141.17508697509766]},
+   :flow [[:ok "^0$"] [:read_message]]},
+  :start
+  {:operation :sleep,
+   :conf {:delay "1000"},
+   :diagram {:corner [108.47679138183594 149.64974975585938]},
+   :flow [[:count_messages]]},
+  :end
+  {:operation :sleep,
+   :conf {:delay "10000"},
+   :diagram {:corner [106.06820678710938 472.1730651855469]},
+   :flow [[:start]]},
+  :read_message
+  {:operation :rabbitmq-read,
+   :conf
+   {:conexion
+    "{\"host\": \"rabbitmq\", \"port\": 5672, \"username\": \"guest\", \"password\": \"guest\", \"vhost\": \"/\"}",
+    :queue_name "alertas",
+    :num_mensajes "1",
+    :bandera "true"},
+   :diagram {:corner [739.4663391113281 134.88578033447266]},
+   :flow [[:error]]},
+  :stop_container
+  {:operation :os-cmd,
+   :conf {:shell "resources/private/stopRam.sh"},
+   :diagram {:corner [976.7114868164062 308.535888671875]},
+   :flow [[:send_Alert]]},
+  :send_Alert
+  {:operation :gmail-sender,
+   :conf
+   {:sender_email "lpz.vlz.ale@gmail.com",
+    :email_password "scjw smat gavo uawq",
+    :recipient_emails "gtoriz@interware.com.mx",
+    :email_subject "Alerta Monitor",
+    :email_body
+    "Se presento el siguiente percance en el servidor monitoreado, :read_message , el cual se corrigio reiniciando el contenedor \"ram_simulator\"",
+    :smtp_server "smtp.gmail.com",
+    :smtp_port "587"},
+   :diagram {:corner [1006.6123199462891 469.1079864501953]},
+   :flow [[:end]]},
+  :ok
+  {:operation :switch-good,
+   :conf {:id "1"},
+   :diagram {:corner [386.4928741455078 316.70616149902344]},
+   :flow [[:end]]},
+  :error
+  {:operation :switch-bad,
+   :conf {:id "1", :minutes "1"},
+   :diagram {:corner [1019.4705963134766 131.8325653076172]},
+   :flow [[:stop_container]]}}}
