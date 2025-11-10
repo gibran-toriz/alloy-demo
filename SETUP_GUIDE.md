@@ -252,6 +252,8 @@ docker exec iw-robot ls -la /var/run/docker.sock
 
 After starting the base stack, you can create dynamic nodes (POS and Servers) to simulate a distributed infrastructure.
 
+> ⚠️ **Important**: You must run `./run_demo.sh` first to create the Docker network and build the required images before creating dynamic nodes.
+
 ### Run the node creation script
 
 ```bash

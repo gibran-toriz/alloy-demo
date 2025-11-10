@@ -22,7 +22,7 @@ echo ""
 
 # Step 2: Stop and remove docker-compose services
 echo "🛑 Stopping and removing docker-compose services..."
-docker-compose down -v
+docker-compose -p alloy-demo down -v
 echo "   ✓ Services stopped and volumes removed"
 echo ""
 

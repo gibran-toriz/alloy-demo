@@ -1,5 +1,41 @@
 #!/bin/bash
 
+# Check if the required Docker network exists
+NETWORK_NAME="alloy-demo_alloy_net"
+if ! docker network inspect $NETWORK_NAME >/dev/null 2>&1; then
+  echo "⚠️  Error: Docker network '$NETWORK_NAME' not found!"
+  echo ""
+  echo "Please run the base stack first:"
+  echo "  ./run_demo.sh"
+  echo ""
+  echo "Then try creating nodes again."
+  exit 1
+fi
+
+# Check if the required Docker images exist
+REQUIRED_IMAGES=("alloy-demo-node:pos" "alloy-demo-node:server")
+MISSING_IMAGES=()
+
+for image in "${REQUIRED_IMAGES[@]}"; do
+  if ! docker image inspect "$image" >/dev/null 2>&1; then
+    MISSING_IMAGES+=("$image")
+  fi
+done
+
+if [ ${#MISSING_IMAGES[@]} -ne 0 ]; then
+  echo "⚠️  Error: Required Docker images not found:"
+  for img in "${MISSING_IMAGES[@]}"; do
+    echo "    - $img"
+  done
+  echo ""
+  echo "Please build the images first by running:"
+  echo "  ./run_demo.sh"
+  echo ""
+  echo "Or build them manually with:"
+  echo "  ./scripts/build_node_images.sh"
+  exit 1
+fi
+
 # Prompt user for the number of POS and Server nodes to create
 read -p "Enter the number of POS nodes to create: " NUM_POS
 read -p "Enter the number of Server nodes to create: " NUM_SERVER

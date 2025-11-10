@@ -2,7 +2,7 @@
 cd "$(dirname "$0")"
 
 # Stop all running containers and remove them
-docker-compose down
+docker-compose -p alloy-demo down
 
 # Remove all dynamic nodes (POS, Server, Switch, Router)
 docker ps -a --filter "ancestor=alloy-demo-node:server" --filter "ancestor=alloy-demo-node:switch" --filter "ancestor=alloy-demo-node:router" --filter "ancestor=alloy-demo-node:pos" -q | xargs -r docker rm -f
@@ -12,7 +12,7 @@ docker ps -a --filter "ancestor=alloy-demo-node:server" --filter "ancestor=alloy
 
 # Start the stack
 #./scripts/build_node_images.sh
-docker-compose up -d 
+docker-compose -p alloy-demo up -d 
 sleep 10  # Wait for 10 seconds to ensure the stack is fully initialized
 
 # Remove the logs 
